@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import {
   Cpu, Timer, CheckCircle, XCircle, Search, BookOpen,
-  RotateCcw, ChevronLeft, ChevronRight, Check, Zap, MapPin
+  RotateCcw, ChevronLeft, ChevronRight, Check, Zap, MapPin, Repeat
 } from 'lucide-react'
 import { examApi } from '../api/examApi'
 
@@ -13,6 +13,7 @@ const StudyPage = () => {
   const [isStarted, setIsStarted] = useState(false)
   const [isGraded, setIsGraded] = useState(false)
   const [isRetakeMode, setIsRetakeMode] = useState(false)
+  const [mode, setMode] = useState('exam') // 'exam'(모의고사) | 'practice'(한 문제씩 풀기)
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [questions, setQuestions] = useState([])
@@ -21,6 +22,14 @@ const StudyPage = () => {
 
   // 타이머 상태 (90분 = 5400초)
   const [timeLeft, setTimeLeft] = useState(5400)
+
+  // 한 문제씩 풀기(무한 학습) 모드 상태: 문제 1개 -> 즉시 채점/해설 -> 다음 문제를 반복한다
+  const [practiceQuestion, setPracticeQuestion] = useState(null)
+  const [practiceUserAnswer, setPracticeUserAnswer] = useState(null) // 선택한 보기 번호(문자열)
+  const [practiceSeenIds, setPracticeSeenIds] = useState([])
+  const [practiceStats, setPracticeStats] = useState({ solved: 0, correct: 0 })
+  const [isPracticeLoading, setIsPracticeLoading] = useState(false)
+  const [practiceError, setPracticeError] = useState(null)
 
   // 리테이크 초기화 로직
   useEffect(() => {
@@ -117,6 +126,7 @@ const StudyPage = () => {
       }))
 
       setQuestions(parsedData)
+      setMode('exam')
       setIsStarted(true)
       setIsGraded(false)
       setIsRetakeMode(false)
@@ -187,6 +197,61 @@ const StudyPage = () => {
 
   const goToPrev = () => {
     if (currentIndex > 0) setCurrentIndex(prev => prev - 1)
+  }
+
+  // 한 문제씩 풀기 모드: 랜덤 1문제를 가져온다 (직전에 풀었던 문제는 제외)
+  const fetchPracticeQuestion = async (certId, excludeIds) => {
+    setIsPracticeLoading(true)
+    setPracticeError(null)
+    setPracticeUserAnswer(null)
+
+    try {
+      const res = await examApi.getPracticeQuestion(certId, excludeIds.slice(-10).join(','))
+      const q = res.data
+      if (!q) {
+        setPracticeQuestion(null)
+        setPracticeError('등록된 문제가 없습니다.')
+      } else {
+        setPracticeQuestion({ ...q, optionsArray: JSON.parse(q.options) })
+      }
+    } catch (error) {
+      console.error('연습 문제 로딩 실패:', error)
+      setPracticeQuestion(null)
+      setPracticeError('백엔드 서버와 연결할 수 없습니다.')
+    } finally {
+      setIsPracticeLoading(false)
+    }
+  }
+
+  const startPractice = async () => {
+    if (!selectedCert) return
+    setMode('practice')
+    setIsStarted(true)
+    setPracticeStats({ solved: 0, correct: 0 })
+    setPracticeSeenIds([])
+    await fetchPracticeQuestion(selectedCert.id, [])
+  }
+
+  // 보기를 클릭하면 그 자리에서 바로 채점하고 해설을 보여준다 (답 자체가 이미 클라이언트에 있으므로 즉시 판정)
+  const handlePracticeSelect = (optionNumber) => {
+    if (practiceUserAnswer || !practiceQuestion) return
+    setPracticeUserAnswer(optionNumber)
+
+    const q = practiceQuestion
+    const uAnswerText = q.optionsArray[parseInt(optionNumber) - 1]
+    const isCorrect = String(q.answer) === String(uAnswerText) || String(q.answer) === String(optionNumber)
+
+    setPracticeStats(prev => ({ solved: prev.solved + 1, correct: prev.correct + (isCorrect ? 1 : 0) }))
+
+    examApi.saveHistory([{ learnId: q.learnId, userAnswer: optionNumber, isCorrect }])
+      .catch(error => console.error('오답노트 저장 실패:', error))
+  }
+
+  const handleNextPractice = () => {
+    if (!practiceQuestion) return
+    const nextSeen = [...practiceSeenIds, practiceQuestion.learnId].slice(-10)
+    setPracticeSeenIds(nextSeen)
+    fetchPracticeQuestion(selectedCert.id, nextSeen)
   }
 
   // ==========================================
@@ -260,15 +325,130 @@ const StudyPage = () => {
             })}
           </div>
 
-          <button
-            disabled={!selectedCert || isLoading}
-            onClick={startExam}
-            className={`w-full py-5 rounded-[24px] font-black text-lg transition-all shadow-xl
-              ${selectedCert ? 'bg-[#3478B8] text-white shadow-[#3478B8]/20 hover:bg-[#2e69a3]' : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'}`}
-          >
-            {isLoading ? '시험지 준비 중...' : (selectedCert ? `"${selectedCert.name}" 학습 시작하기` : '응시할 종목을 선택해 주세요')}
-          </button>
+          <div className="flex flex-col md:flex-row gap-4">
+            <button
+              disabled={!selectedCert || isLoading}
+              onClick={startPractice}
+              className={`md:w-72 flex items-center justify-center py-5 rounded-[24px] font-black text-lg transition-all border-2
+                ${selectedCert ? 'border-[#3478B8] text-[#3478B8] bg-white hover:bg-[#3478B8]/5' : 'border-gray-200 text-gray-400 cursor-not-allowed'}`}
+            >
+              <Repeat size={20} className="mr-2" /> 한 문제씩 풀기
+            </button>
+            <button
+              disabled={!selectedCert || isLoading}
+              onClick={startExam}
+              className={`flex-1 py-5 rounded-[24px] font-black text-lg transition-all shadow-xl
+                ${selectedCert ? 'bg-[#3478B8] text-white shadow-[#3478B8]/20 hover:bg-[#2e69a3]' : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'}`}
+            >
+              {isLoading ? '시험지 준비 중...' : (selectedCert ? `"${selectedCert.name}" 모의고사 시작하기` : '응시할 종목을 선택해 주세요')}
+            </button>
+          </div>
         </main>
+      </div>
+    )
+  }
+
+  // ==========================================
+  // [한 문제씩 풀기 모드] 문제 1개 -> 즉시 채점/해설 -> 다음 문제를 무한 반복
+  // ==========================================
+  if (mode === 'practice') {
+    const accuracy = practiceStats.solved > 0 ? Math.round((practiceStats.correct / practiceStats.solved) * 100) : 0
+    const isAnswered = Boolean(practiceUserAnswer)
+    const pq = practiceQuestion
+
+    return (
+      <div className="min-h-screen bg-[#EAECEF] font-sans text-[#4A4F58] py-8 px-6">
+        <div className="max-w-3xl mx-auto flex flex-col gap-6">
+          <header className="flex items-center justify-between bg-white rounded-[24px] p-6 border border-gray-100 shadow-sm">
+            <div className="flex items-center space-x-4">
+              <button onClick={() => setIsStarted(false)}
+                className="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-400 rounded-full transition-colors border border-gray-100"
+              >
+                <RotateCcw size={18} />
+              </button>
+              <div>
+                <span className="flex items-center text-[10px] font-black text-[#3478B8] uppercase tracking-widest mb-1">
+                  <Repeat size={12} className="mr-1.5" /> 한 문제씩 풀기
+                </span>
+                <h2 className="text-xl md:text-2xl font-black tracking-tight">{selectedCert.name}</h2>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-xs font-black text-gray-400 tracking-tighter mb-1.5">
+                {practiceStats.solved}문제 풀이
+              </div>
+              <div className="text-lg font-black text-[#3BAA7D]">정답률 {accuracy}%</div>
+            </div>
+          </header>
+
+          {isPracticeLoading ? (
+            <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm py-24 text-center text-gray-400 font-black">
+              문제를 불러오는 중입니다...
+            </div>
+          ) : practiceError || !pq ? (
+            <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm py-24 flex flex-col items-center gap-6">
+              <p className="text-gray-400 font-black">{practiceError || '등록된 문제가 없습니다.'}</p>
+              <button
+                onClick={() => fetchPracticeQuestion(selectedCert.id, practiceSeenIds)}
+                className="flex items-center px-6 py-3 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-2xl font-black text-gray-500 transition-colors"
+              >
+                <RotateCcw size={16} className="mr-2" /> 다시 시도
+              </button>
+            </div>
+          ) : (
+            <div className="bg-white p-8 md:p-12 rounded-[32px] border border-gray-100 shadow-sm flex flex-col">
+              <div className="mb-10">
+                <div className="flex justify-between items-center mb-6">
+                  <span className="text-[12px] font-black text-[#3478B8] uppercase tracking-widest bg-[#3478B8]/10 px-4 py-2 rounded-full flex items-center">
+                    <Zap size={14} className="mr-1.5" /> Question {String(practiceStats.solved + 1).padStart(2, '0')}
+                  </span>
+                  {isAnswered && (
+                    <span className={`text-[12px] font-black px-4 py-2 rounded-full tracking-widest uppercase
+                      ${(String(pq.answer) === String(pq.optionsArray[parseInt(practiceUserAnswer) - 1]) || String(pq.answer) === String(practiceUserAnswer)) ? 'bg-[#3BAA7D]/10 text-[#3BAA7D]' : 'bg-[#E61E2B]/10 text-[#E61E2B]'}`}>
+                      {(String(pq.answer) === String(pq.optionsArray[parseInt(practiceUserAnswer) - 1]) || String(pq.answer) === String(practiceUserAnswer)) ? 'Correct' : 'Incorrect'}
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-2xl md:text-3xl font-black leading-snug text-[#4A4F58] break-keep">
+                  {pq.question}
+                </h3>
+              </div>
+
+              <div className="space-y-4">
+                {pq.optionsArray.map((opt, optIdx) => (
+                  <Option
+                    key={optIdx}
+                    text={`${optIdx + 1}. ${opt}`}
+                    isSelected={practiceUserAnswer === String(optIdx + 1)}
+                    isActualAnswer={String(pq.answer) === String(opt) || String(pq.answer) === String(optIdx + 1)}
+                    isGraded={isAnswered}
+                    onClick={() => handlePracticeSelect(String(optIdx + 1))}
+                  />
+                ))}
+              </div>
+
+              {isAnswered && pq.explanation && (
+                <div className="mt-10 p-6 rounded-[24px] bg-[#3BAA7D]/5 border border-[#3BAA7D]/20 text-[#4A4F58] text-sm leading-relaxed">
+                  <div className="flex items-center mb-3">
+                    <span className="text-[#3BAA7D] font-black tracking-tight flex items-center">
+                      <CheckCircle size={16} className="mr-1.5" /> 문제 해설
+                    </span>
+                  </div>
+                  <p className="font-medium whitespace-pre-line text-gray-600">{pq.explanation}</p>
+                </div>
+              )}
+
+              {isAnswered && (
+                <button
+                  onClick={handleNextPractice}
+                  className="w-full mt-10 py-5 rounded-[24px] font-black text-lg bg-[#3478B8] text-white shadow-xl shadow-[#3478B8]/20 hover:bg-[#2e69a3] transition-all flex items-center justify-center"
+                >
+                  다음 문제 <ChevronRight size={20} className="ml-2" />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     )
   }
