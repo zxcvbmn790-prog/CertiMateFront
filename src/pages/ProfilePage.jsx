@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { authApi } from '../api/authApi'
 import { userApi } from '../api/userApi'
 import { communityApi } from '../api/communityApi'
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts'
 import {
   User, Award, BookOpen, Bookmark,
   Settings, Bell, ChevronRight, PieChart,
   Calendar, CheckCircle2, Clock, X, Download, Activity,
-  ChevronLeft, CheckCircle, XCircle, RotateCcw, Zap, ChevronDown
+  ChevronLeft, CheckCircle, XCircle, RotateCcw, Zap, ChevronDown, Trash2
 } from 'lucide-react'
 
 const ProfilePage = () => {
@@ -30,12 +31,16 @@ const ProfilePage = () => {
     totalStudyTime: '0h',
     cbtAccuracy: '0%',
     heatmapData: [],
-    targetExam: null
+    targetExam: null,
+    certStats: [],
+    allCertifications: []
   })
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
+  const [isAddScheduleModalOpen, setIsAddScheduleModalOpen] = useState(false)
+  const [scheduleForm, setScheduleForm] = useState({ certId: '', examType: '필기', examDate: '', targetReadCount: 3 })
 
   const [myPosts, setMyPosts] = useState([])
   const [likedPosts, setLikedPosts] = useState([])
@@ -134,6 +139,38 @@ const ProfilePage = () => {
         navigate('/login')
       })
       .catch(err => alert('회원탈퇴에 실패했습니다.'))
+  }
+
+  const handleAddSchedule = (e) => {
+    e.preventDefault();
+    if (!scheduleForm.certId || !scheduleForm.examDate) {
+      alert('자격증과 시험 일자를 모두 입력해주세요.');
+      return;
+    }
+    userApi.addSchedule(scheduleForm)
+      .then(() => {
+        alert('시험 일정이 성공적으로 등록되었습니다.');
+        setIsAddScheduleModalOpen(false);
+        setScheduleForm({ certId: '', examType: '필기', examDate: '', targetReadCount: 3 });
+        fetchData();
+      })
+      .catch(err => {
+        console.error(err);
+        alert('시험 일정 등록에 실패했습니다.');
+      });
+  }
+
+  const handleDeleteSchedule = () => {
+    if (!window.confirm('등록된 시험 일정을 삭제하시겠습니까?')) return;
+    userApi.deleteSchedule()
+      .then(() => {
+        alert('삭제되었습니다.');
+        fetchData();
+      })
+      .catch(err => {
+        console.error(err);
+        alert('삭제에 실패했습니다.');
+      });
   }
 
   const handleHeatmapClick = (date, count) => {
@@ -293,8 +330,8 @@ const ProfilePage = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <StatCard icon={<Award className="text-[#3478B8]" />} label="보유 자격증" value={dashboard.certCount} />
           <StatCard icon={<Bookmark className="text-[#D9A23A]" />} label="스크랩 종목" value={dashboard.scrapCount} />
-          <StatCard icon={<PieChart className="text-[#3BAA7D]" />} label="CBT 정답률" value={dashboard.cbtAccuracy} />
-          <StatCard icon={<Clock className="text-gray-400" />} label="학습 시간" value={dashboard.totalStudyTime} />
+          <StatCard icon={<PieChart className="text-[#3BAA7D]" />} label="CBT 평균 정답률" value={dashboard.cbtAccuracy} expandableData={dashboard.certStats?.map(s => ({ name: s.certName, value: s.accuracy }))} />
+          <StatCard icon={<Clock className="text-gray-400" />} label="총 학습 시간" value={dashboard.totalStudyTime} expandableData={dashboard.certStats?.map(s => ({ name: s.certName, value: s.studyTime }))} />
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -302,8 +339,22 @@ const ProfilePage = () => {
           <div className="lg:col-span-2 space-y-6">
             <section className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
               <h3 className="text-lg font-black mb-2 flex items-center text-[#4A4F58]"><Activity className="mr-3 text-[#3BAA7D]" size={20} /> 꾸준한 학습의 흔적</h3>
-              <p className="text-xs text-gray-400 font-bold mb-4">잔디를 클릭하면 회차별 오답노트나 다시 풀기를 할 수 있습니다.</p>
+              <p className="text-xs text-gray-400 font-bold mb-4">잔디를 클릭하면 해당일의 오답노트와 다시 풀기를 할 수 있습니다.</p>
               {renderHeatmap()}
+            </section>
+
+            {/* 성적 변화 추이 그래프 */}
+            <section className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
+              <h3 className="text-lg font-black mb-6 flex items-center text-[#4A4F58]">
+                <Activity className="mr-3 text-[#D9A23A]" size={20} /> 성적 변화 추이
+              </h3>
+              {dashboard.certTrends && dashboard.certTrends.length > 0 ? (
+                <CertTrendChart certTrends={dashboard.certTrends} />
+              ) : (
+                <div className="text-center py-10 text-gray-400 text-sm font-bold">
+                  아직 모의고사 학습 데이터가 없습니다.
+                </div>
+              )}
             </section>
 
             {/* 커뮤니티 활동 (내가 쓴 글 & 좋아요 누른 글) */}
@@ -370,24 +421,34 @@ const ProfilePage = () => {
           {/* 우측 사이드 영역 (30%) */}
           <div className="space-y-6">
             <section className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
-              <h3 className="text-lg font-black mb-6 flex items-center text-[#4A4F58]"><Calendar className="mr-3 text-[#3478B8]" size={20} /> 준비 중인 시험 (D-Day)</h3>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-base font-black flex items-center text-[#4A4F58] whitespace-nowrap mr-2">
+                  <Calendar className="mr-2 text-[#3478B8] shrink-0" size={18} /> 준비 중인 시험
+                </h3>
+                <button onClick={() => setIsAddScheduleModalOpen(true)} className="shrink-0 whitespace-nowrap text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-full font-bold transition">
+                  + 추가
+                </button>
+              </div>
               {dashboard.targetExam ? (
-                <div className="p-6 bg-[#3478B8]/5 border border-[#3478B8]/20 rounded-2xl">
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-1.5 h-10 bg-[#D9A23A] rounded-full"></div>
-                      <div className="text-left">
-                        <h4 className="font-bold text-[#4A4F58]">{dashboard.targetExam.certName} ({dashboard.targetExam.examType})</h4>
-                        <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase">Exam Date: {dashboard.targetExam.examDate}</p>
+                <div className="p-6 bg-[#3478B8]/5 border border-[#3478B8]/20 rounded-2xl group">
+                  <div className="flex justify-between items-start mb-4 gap-2">
+                    <div className="flex items-center space-x-3 min-w-0 flex-1">
+                      <div className="w-1.5 h-10 bg-[#D9A23A] rounded-full shrink-0"></div>
+                      <div className="text-left min-w-0 pr-2">
+                        <h4 className="font-bold text-[#4A4F58] truncate" title={`${dashboard.targetExam.certName} (${dashboard.targetExam.examType})`}>{dashboard.targetExam.certName} ({dashboard.targetExam.examType})</h4>
+                        <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase">Exam: {dashboard.targetExam.examDate}</p>
                       </div>
                     </div>
-                    <div className="text-right"><span className="text-xl font-black text-[#D9A23A]">{dashboard.targetExam.dDay <= 0 ? 'D-Day' : `D-${dashboard.targetExam.dDay}`}</span></div>
+                    <div className="text-right flex flex-col items-end shrink-0 pl-2 border-l border-gray-200">
+                      <button onClick={handleDeleteSchedule} className="text-gray-300 hover:text-red-500 mb-1 transition opacity-0 group-hover:opacity-100" title="일정 삭제"><Trash2 size={14} /></button>
+                      <span className="text-xl font-black text-[#D9A23A] whitespace-nowrap leading-none mt-1">{dashboard.targetExam.dDay <= 0 ? 'D-Day' : `D-${dashboard.targetExam.dDay}`}</span>
+                    </div>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2.5"><div className="bg-[#3BAA7D] h-2.5 rounded-full" style={{ width: `${Math.min(100, Number(dashboard.targetExam.achievementRate))}%` }}></div></div>
                   <p className="text-right text-xs text-gray-500 mt-2 font-bold">목표 달성률: {dashboard.targetExam.achievementRate}%</p>
                 </div>
               ) : (
-                <div className="p-6 bg-gray-50 border border-gray-100 rounded-2xl text-center text-gray-400 font-bold text-sm">목표 시험 일정이 없습니다.</div>
+                <div className="p-6 bg-gray-50 border border-gray-100 rounded-2xl text-center text-gray-400 font-bold text-sm">목표 시험 일정이 없습니다.<br/>우측 상단 '추가' 버튼으로 등록해보세요.</div>
               )}
             </section>
 
@@ -487,15 +548,145 @@ const ProfilePage = () => {
           </div>
         </div>
       )}
+
+      {/* 시험 일정 추가 모달 */}
+      {isAddScheduleModalOpen && (
+        <div className="no-print fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-[32px] p-8 w-full max-w-md shadow-2xl relative">
+            <button onClick={() => setIsAddScheduleModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-600"><X size={24} /></button>
+            <h2 className="text-2xl font-black text-[#4A4F58] mb-6">시험 일정 추가</h2>
+            <form onSubmit={handleAddSchedule} className="space-y-4 text-left">
+              <div>
+                <label className="block text-sm font-bold text-gray-600 mb-1">자격증</label>
+                <select value={scheduleForm.certId} onChange={e => setScheduleForm({ ...scheduleForm, certId: e.target.value })} className="w-full border border-gray-200 focus:border-[#3478B8] rounded-xl px-4 py-3 text-sm outline-none transition appearance-none" required>
+                  <option value="">자격증 선택</option>
+                  {dashboard.allCertifications?.map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-600 mb-1">시험 종류</label>
+                <select value={scheduleForm.examType} onChange={e => setScheduleForm({ ...scheduleForm, examType: e.target.value })} className="w-full border border-gray-200 focus:border-[#3478B8] rounded-xl px-4 py-3 text-sm outline-none transition appearance-none" required>
+                  <option value="필기">필기</option>
+                  <option value="실기">실기</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-600 mb-1">시험 날짜</label>
+                <input type="date" value={scheduleForm.examDate} onChange={e => setScheduleForm({ ...scheduleForm, examDate: e.target.value })} className="w-full border border-gray-200 focus:border-[#3478B8] rounded-xl px-4 py-3 text-sm outline-none transition" required />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-600 mb-1">목표 모의고사 풀이 횟수</label>
+                <input type="number" min="1" value={scheduleForm.targetReadCount === 0 ? '' : scheduleForm.targetReadCount} onChange={e => setScheduleForm({ ...scheduleForm, targetReadCount: e.target.value === '' ? '' : Number(e.target.value) })} className="w-full border border-gray-200 focus:border-[#3478B8] rounded-xl px-4 py-3 text-sm outline-none transition mb-2" required placeholder="목표 횟수를 입력하세요" />
+                {(() => {
+                  const count = scheduleForm.targetReadCount;
+                  if (count === '') return null;
+                  let colorClass = 'text-[#3BAA7D] bg-[#3BAA7D]/10 border-[#3BAA7D]/20';
+                  let message = '🟢 안정권 (합격 가능성이 매우 높습니다!)';
+                  if (count <= 15) {
+                    colorClass = 'text-red-500 bg-red-50 border-red-100';
+                    message = '🔴 위험 (합격을 위해 목표를 더 높여주세요)';
+                  } else if (count <= 24) {
+                    colorClass = 'text-[#D9A23A] bg-[#D9A23A]/10 border-[#D9A23A]/20';
+                    message = '🟡 주의 (안정적인 합격을 위해 조금 더 늘려보세요)';
+                  }
+                  return (
+                    <div className={`text-xs font-bold px-3 py-2 rounded-lg border ${colorClass} transition-colors duration-300`}>
+                      {message}
+                    </div>
+                  )
+                })()}
+              </div>
+              <button type="submit" className="w-full bg-[#3478B8] text-white font-black py-4 rounded-xl mt-6 hover:bg-[#2e69a3] transition shadow-lg shadow-[#3478B8]/20">
+                추가 완료
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
-const StatCard = ({ icon, label, value }) => (
-  <div className="bg-white p-6 rounded-[28px] border border-gray-100 text-center shadow-sm"><div className="flex justify-center mb-3">{icon}</div><p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-1">{label}</p><p className="text-2xl font-black text-[#4A4F58]">{value}</p></div>
-)
+const StatCard = ({ icon, label, value, expandableData }) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="bg-white p-6 rounded-[28px] border border-gray-100 text-center shadow-sm relative transition-all">
+      <div className="flex justify-center mb-3 cursor-pointer" onClick={() => expandableData?.length > 0 && setExpanded(!expanded)}>
+        {icon}
+      </div>
+      <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-1 flex items-center justify-center cursor-pointer" onClick={() => expandableData?.length > 0 && setExpanded(!expanded)}>
+        {label} {expandableData?.length > 0 && <ChevronDown size={12} className={`ml-1 transition-transform ${expanded ? 'rotate-180' : ''}`} />}
+      </p>
+      <p className="text-2xl font-black text-[#4A4F58]">{value}</p>
+      
+      {expanded && expandableData?.length > 0 && (
+        <div className="mt-4 pt-4 border-t border-gray-100 text-left space-y-2 max-h-32 overflow-y-auto custom-scrollbar">
+          {expandableData.map((d, i) => (
+             <div key={i} className="flex justify-between items-center text-xs">
+                <span className="font-bold text-gray-500 truncate max-w-[100px]" title={d.name}>{d.name}</span>
+                <span className="font-black text-[#3BAA7D]">{d.value}</span>
+             </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 const ScrapItem = ({ title, date }) => (
   <div className="flex justify-between items-center group cursor-pointer"><span className="text-sm font-bold truncate max-w-[180px]">{title}</span><span className="text-[10px] text-gray-400 ml-2">{date}</span></div>
 )
+
+const CertTrendChart = ({ certTrends }) => {
+  const [selectedCert, setSelectedCert] = useState(certTrends[0]?.certName);
+
+  const activeTrend = certTrends.find(t => t.certName === selectedCert);
+  const data = activeTrend?.trendData || [];
+
+  return (
+    <div className="flex flex-col h-[350px]">
+      <div className="flex space-x-2 mb-6 border-b border-gray-100 pb-2 overflow-x-auto custom-scrollbar">
+        {certTrends.map(t => (
+          <button
+            key={t.certName}
+            onClick={() => setSelectedCert(t.certName)}
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 ${selectedCert === t.certName ? 'bg-[#3BAA7D] text-white shadow-md' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
+          >
+            {t.certName}
+          </button>
+        ))}
+      </div>
+      
+      <div className="flex-1 w-full min-h-0 relative text-xs font-bold">
+        {data.length > 0 ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={data} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+              <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af' }} dy={10} />
+              <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fill: '#9ca3af' }} />
+              <Tooltip 
+                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)', fontWeight: 'bold' }} 
+                formatter={(value) => [`${value.toFixed(1)}%`, '정답률']} 
+                labelStyle={{ color: '#4A4F58', marginBottom: '4px' }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="accuracy" 
+                stroke="#3BAA7D" 
+                strokeWidth={4} 
+                dot={{ r: 5, fill: '#3BAA7D', strokeWidth: 0 }}
+                activeDot={{ r: 8, fill: '#fff', stroke: '#3BAA7D', strokeWidth: 3 }}
+                animationDuration={1500}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-gray-400">데이터가 부족합니다.</div>
+        )}
+      </div>
+    </div>
+  )
+}
 
 export default ProfilePage

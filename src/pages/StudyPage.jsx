@@ -151,12 +151,20 @@ const StudyPage = () => {
     setCurrentIndex(0)
 
     const historyPayload = questions.map(q => {
-      const uAnswer = userAnswers[q.learnId] || ''
-      const correct = String(uAnswer) === String(q.answer)
+      const uAnswer = userAnswers[q.learnId]
+      let isCorrect = false
+      if (uAnswer) {
+        if (Array.isArray(q.answer)) {
+          isCorrect = JSON.stringify(q.answer) === JSON.stringify(uAnswer)
+        } else {
+          const uAnswerText = q.optionsArray[parseInt(uAnswer) - 1]
+          isCorrect = String(q.answer) === String(uAnswerText) || String(q.answer) === String(uAnswer)
+        }
+      }
       return {
         learnId: q.learnId,
-        userAnswer: uAnswer,
-        isCorrect: correct
+        userAnswer: uAnswer || '',
+        isCorrect: isCorrect
       }
     })
 
@@ -304,8 +312,8 @@ const StudyPage = () => {
                   </span>
                   {isGraded && (
                     <span className={`text-[12px] font-black px-4 py-2 rounded-full tracking-widest uppercase
-                      ${String(userAnswers[q.learnId]) === String(q.answer) ? 'bg-[#3BAA7D]/10 text-[#3BAA7D]' : 'bg-[#E61E2B]/10 text-[#E61E2B]'}`}>
-                      {String(userAnswers[q.learnId]) === String(q.answer) ? 'Correct' : 'Incorrect'}
+                      ${(String(q.answer) === String(q.optionsArray[parseInt(userAnswers[q.learnId]) - 1]) || String(q.answer) === String(userAnswers[q.learnId])) ? 'bg-[#3BAA7D]/10 text-[#3BAA7D]' : 'bg-[#E61E2B]/10 text-[#E61E2B]'}`}>
+                      {(String(q.answer) === String(q.optionsArray[parseInt(userAnswers[q.learnId]) - 1]) || String(q.answer) === String(userAnswers[q.learnId])) ? 'Correct' : 'Incorrect'}
                     </span>
                   )}
                 </div>
@@ -320,7 +328,7 @@ const StudyPage = () => {
                     key={optIdx}
                     text={`${optIdx + 1}. ${opt}`}
                     isSelected={userAnswers[q.learnId] === String(optIdx + 1)}
-                    isActualAnswer={String(q.answer) === String(optIdx + 1)}
+                    isActualAnswer={String(q.answer) === String(opt) || String(q.answer) === String(optIdx + 1)}
                     isGraded={isGraded}
                     onClick={() => handleSelectAnswer(q.learnId, String(optIdx + 1))}
                   />
@@ -387,7 +395,16 @@ const StudyPage = () => {
                 let btnClass = 'bg-gray-50 text-gray-400 border-gray-100 hover:border-gray-300' // 기본 (안풂)
 
                 if (isGraded) {
-                  const isCorrect = String(userAnswers[question.learnId]) === String(question.answer)
+                  const uAnswer = userAnswers[question.learnId];
+                  let isCorrect = false;
+                  if (uAnswer) {
+                    if (Array.isArray(question.answer)) {
+                      isCorrect = JSON.stringify(question.answer) === JSON.stringify(uAnswer);
+                    } else {
+                      const uAnswerText = question.optionsArray[parseInt(uAnswer) - 1];
+                      isCorrect = String(question.answer) === String(uAnswerText) || String(question.answer) === String(uAnswer);
+                    }
+                  }
                   if (isCorrect) btnClass = 'bg-[#3BAA7D]/10 border-[#3BAA7D]/30 text-[#3BAA7D]' // 정답
                   else if (isAnswered) btnClass = 'bg-[#E61E2B]/10 border-[#E61E2B]/30 text-[#E61E2B]' // 오답
                   else btnClass = 'bg-gray-100 border-transparent text-gray-300' // 미응답
