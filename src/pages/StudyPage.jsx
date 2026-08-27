@@ -18,6 +18,7 @@ const StudyPage = () => {
   const [questions, setQuestions] = useState([])
   const [userAnswers, setUserAnswers] = useState({})
   const [isLoading, setIsLoading] = useState(false)
+  const [explaining, setExplaining] = useState(false)
 
   // 타이머 상태 (90분 = 5400초)
   const [timeLeft, setTimeLeft] = useState(5400)
@@ -188,6 +189,21 @@ const StudyPage = () => {
 
     setIsGraded(true)
     setCurrentIndex(0)
+
+    // 채점 시 해설이 없는 문제들은 AI로 일괄 생성해 채워 넣는다 (생성된 해설은 서버가 DB에 영구 저장)
+    const missing = questions.filter(q => !q.explanation || String(q.explanation).trim() === '')
+    if (missing.length > 0) {
+      setExplaining(true)
+      try {
+        const res = await examApi.generateExplanations(missing.map(q => q.learnId))
+        const map = Object.fromEntries(res.data.map(e => [e.learnId, e.explanation]))
+        setQuestions(prev => prev.map(q => (map[q.learnId] ? { ...q, explanation: map[q.learnId] } : q)))
+      } catch (error) {
+        console.error('AI 해설 생성 실패:', error)
+      } finally {
+        setExplaining(false)
+      }
+    }
 
     const historyPayload = questions.map(q => {
       const uAnswer = userAnswers[q.learnId] || ''
@@ -415,6 +431,12 @@ const StudyPage = () => {
                     </span>
                   </div>
                   <p className="font-medium whitespace-pre-line text-gray-600">{q.explanation}</p>
+                </div>
+              )}
+
+              {isGraded && !q.explanation && explaining && (
+                <div className="mt-10 p-6 rounded-[24px] bg-[#3478B8]/5 border border-[#3478B8]/20 text-[#3478B8] text-sm font-bold flex items-center">
+                  <Zap size={16} className="mr-2 animate-pulse" /> AI가 해설을 생성하고 있습니다...
                 </div>
               )}
             </div>
