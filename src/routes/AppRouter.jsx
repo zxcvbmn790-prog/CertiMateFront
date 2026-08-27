@@ -9,6 +9,7 @@ import RegisterPage from '../pages/RegisterPage'
 import AdminPage from '../pages/AdminPage'
 import FindPasswordPage from '../pages/FindPasswordPage'
 import KakaoCallbackPage from '../pages/KakaoCallbackPage'
+import GoogleCallbackPage from '../pages/GoogleCallbackPage'
 import NotFoundPage from '../pages/NotFoundPage'
 
 function AppRouter() {
@@ -24,6 +25,7 @@ function AppRouter() {
       <Route path="/admin" element={<AdminPage />} />
       <Route path="/find-password" element={<FindPasswordPage />} />
       <Route path="/auth/kakao/callback" element={<KakaoCallbackPage />} />
+      <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
