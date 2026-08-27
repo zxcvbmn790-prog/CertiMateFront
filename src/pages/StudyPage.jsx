@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import {
   Cpu, Timer, CheckCircle, XCircle, Search, BookOpen,
-  RotateCcw, ChevronLeft, ChevronRight, Check, Zap, MapPin
+  RotateCcw, ChevronLeft, ChevronRight, Check, Zap
 } from 'lucide-react'
 import { examApi } from '../api/examApi'
 
@@ -74,17 +74,56 @@ const StudyPage = () => {
     }
   }, [location.state])
 
-  const certifications = [
-    { id: 1, name: '정보처리산업기사', category: '국가기술', questions: 60, difficulty: 'Level 3', match: 98 },
-    { id: 2, name: 'SQLD (개발자)', category: '민간자격', questions: 50, difficulty: 'Level 2', match: 85 },
-    { id: 3, name: '리눅스마스터 2급', category: '국가기술', questions: 80, difficulty: 'Level 2', match: 70 },
-    { id: 4, name: '네트워크관리사 2급', category: '민간자격', questions: 50, difficulty: 'Level 2', match: 65 },
-    { id: 5, name: '데이터분석준전문가(ADsP)', category: '민간자격', questions: 50, difficulty: 'Level 3', match: 80 }
-  ]
+  // 실제 문제가 등록된 자격증만 백엔드에서 불러온다 (문제 0개 종목은 애초에 목록에 안 나옴)
+  const [certifications, setCertifications] = useState([])
+
+  useEffect(() => {
+    examApi.getCerts()
+      .then((res) => {
+        const list = res.data.map((c) => ({
+          id: c.certId,
+          name: c.certName,
+          category: c.agency || '자격증',
+          difficulty: c.difficulty || '',
+          questions: c.totalQuestions,
+          subjects: [c.subject1, c.subject2, c.subject3],
+        }))
+        setCertifications(list)
+      })
+      .catch((err) => console.error('자격증 목록 로딩 실패:', err))
+  }, [])
 
   const filteredCerts = certifications.filter(cert =>
     cert.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  // 과목별 채점 결과 계산 (정보처리산업기사: 과목당 40점 이상 & 전과목 평균 60점 이상 합격)
+  const computeResult = () => {
+    const bySubject = {}
+    questions.forEach((qq) => {
+      const s = qq.subjectNum ?? 0
+      if (!bySubject[s]) bySubject[s] = { total: 0, correct: 0 }
+      bySubject[s].total += 1
+      if (String(userAnswers[qq.learnId]) === String(qq.answer)) bySubject[s].correct += 1
+    })
+    const subjects = Object.keys(bySubject)
+      .map(Number)
+      .sort((a, b) => a - b)
+      .map((s) => {
+        const { total, correct } = bySubject[s]
+        return { subjectNum: s, total, correct, score: total ? Math.round((correct / total) * 100) : 0 }
+      })
+    const totalQ = questions.length
+    const totalCorrect = subjects.reduce((acc, s) => acc + s.correct, 0)
+    const overall = totalQ ? Math.round((totalCorrect / totalQ) * 100) : 0
+    const graded = subjects.filter((s) => s.subjectNum > 0)
+    const hasSubjects = graded.length > 1
+    const failedSubject = graded.some((s) => s.score < 40)
+    const passed = overall >= 60 && !failedSubject
+    return { subjects, overall, totalCorrect, totalQ, passed, hasSubjects, failedSubject }
+  }
+
+  const subjectLabel = (n) => (n > 0 ? `${n}과목` : '기타')
 
   // 타이머 카운트다운 로직
   useEffect(() => {
@@ -238,15 +277,25 @@ const StudyPage = () => {
                         #{cert.category}
                       </span>
                     </div>
-                    <div className="text-right">
-                      <span className={`text-[11px] font-black ${isSelected ? 'text-[#3478B8]' : 'text-[#3BAA7D]'}`}>{cert.match}% Match</span>
-                    </div>
+                    {cert.difficulty && (
+                      <div className="text-right">
+                        <span className={`text-[11px] font-black ${isSelected ? 'text-[#3478B8]' : 'text-[#3BAA7D]'}`}>{cert.difficulty}</span>
+                      </div>
+                    )}
                   </div>
                   <h4 className={`text-2xl font-black mb-3 transition-colors ${isSelected ? 'text-[#3478B8]' : 'group-hover:text-[#3478B8]'}`}>{cert.name}</h4>
-                  <div className="flex items-center text-xs text-gray-400 font-bold space-x-4">
-                    <span className="flex items-center"><BookOpen size={14} className="mr-1.5 text-gray-300" /> {cert.difficulty}</span>
-                    <span className="flex items-center"><MapPin size={14} className="mr-1.5 text-gray-300" /> 총 {cert.questions}문항</span>
+                  <div className="flex items-center text-xs text-gray-400 font-bold space-x-4 mb-3">
+                    <span className="flex items-center"><BookOpen size={14} className="mr-1.5 text-gray-300" /> 총 {cert.questions}문항</span>
                   </div>
+                  {cert.subjects && (
+                    <div className="flex items-center gap-1.5">
+                      {cert.subjects.map((n, i) => (
+                        <span key={i} className="text-[10px] font-black px-2 py-1 rounded-md bg-gray-50 text-gray-400 border border-gray-100">
+                          {i + 1}과목 {n}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -266,6 +315,30 @@ const StudyPage = () => {
   }
 
   const q = questions[currentIndex]
+  const result = isGraded ? computeResult() : null
+
+  // OMR 답안 현황을 과목별로 묶는다 (문항은 이미 과목 순서대로 정렬되어 옴)
+  const omrGroups = questions.reduce((acc, question, idx) => {
+    const s = question.subjectNum ?? 0
+    let g = acc.find((x) => x.subjectNum === s)
+    if (!g) { g = { subjectNum: s, items: [] }; acc.push(g) }
+    g.items.push({ question, idx })
+    return acc
+  }, [])
+
+  const omrBtnClass = (question, idx) => {
+    const isAnswered = !!userAnswers[question.learnId]
+    const isCurrent = currentIndex === idx
+    if (isGraded) {
+      const isCorrect = String(userAnswers[question.learnId]) === String(question.answer)
+      if (isCorrect) return 'bg-[#3BAA7D]/10 border-[#3BAA7D]/30 text-[#3BAA7D]'
+      if (isAnswered) return 'bg-[#E61E2B]/10 border-[#E61E2B]/30 text-[#E61E2B]'
+      return 'bg-gray-100 border-transparent text-gray-300'
+    }
+    if (isCurrent) return 'bg-[#3478B8] text-white border-[#3478B8] shadow-md shadow-[#3478B8]/20'
+    if (isAnswered) return 'bg-[#3478B8]/10 border-[#3478B8]/20 text-[#3478B8]'
+    return 'bg-gray-50 text-gray-400 border-gray-100 hover:border-gray-300'
+  }
 
   // ==========================================
   // [2단계 화면] CBT 문제 풀이
@@ -299,9 +372,16 @@ const StudyPage = () => {
             <div className="bg-white p-8 md:p-12 rounded-[32px] border border-gray-100 shadow-sm flex-1 flex flex-col">
               <div className="mb-10">
                 <div className="flex justify-between items-center mb-6">
-                  <span className="text-[12px] font-black text-[#3478B8] uppercase tracking-widest bg-[#3478B8]/10 px-4 py-2 rounded-full flex items-center">
-                    <Zap size={14} className="mr-1.5" /> Question {String(currentIndex + 1).padStart(2, '0')}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[12px] font-black text-[#3478B8] uppercase tracking-widest bg-[#3478B8]/10 px-4 py-2 rounded-full flex items-center">
+                      <Zap size={14} className="mr-1.5" /> Question {String(currentIndex + 1).padStart(2, '0')}
+                    </span>
+                    {q.subjectNum > 0 && (
+                      <span className="text-[12px] font-black text-[#D9A23A] bg-[#D9A23A]/10 px-4 py-2 rounded-full">
+                        {subjectLabel(q.subjectNum)}
+                      </span>
+                    )}
+                  </div>
                   {isGraded && (
                     <span className={`text-[12px] font-black px-4 py-2 rounded-full tracking-widest uppercase
                       ${String(userAnswers[q.learnId]) === String(q.answer) ? 'bg-[#3BAA7D]/10 text-[#3BAA7D]' : 'bg-[#E61E2B]/10 text-[#E61E2B]'}`}>
@@ -360,15 +440,52 @@ const StudyPage = () => {
 
         {/* 우측: OMR 및 정보 패널 */}
         <div className="w-full lg:w-[380px] flex flex-col gap-6 shrink-0">
-          <div className="bg-[#4A4F58] rounded-[32px] p-8 text-white shadow-2xl relative overflow-hidden text-center border border-gray-800">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16"></div>
-            <div className="text-gray-300 font-black text-xs mb-3 uppercase tracking-widest flex items-center justify-center">
-              <Timer size={16} className="mr-2" /> Remaining Time
+          {isGraded && result ? (
+            <div className="bg-[#4A4F58] rounded-[32px] p-8 text-white shadow-2xl relative overflow-hidden border border-gray-800">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16"></div>
+              <div className="text-center mb-6">
+                <div className="text-gray-300 font-black text-xs mb-3 uppercase tracking-widest">Total Score</div>
+                <div className="text-5xl font-black tracking-tighter text-[#D9A23A]">
+                  {result.overall}<span className="text-2xl text-gray-400">점</span>
+                </div>
+                <div className="text-gray-300 text-xs font-bold mt-1">{result.totalCorrect} / {result.totalQ} 정답</div>
+                {result.hasSubjects && (
+                  <div className={`inline-block mt-4 px-5 py-2 rounded-full font-black text-sm tracking-widest
+                    ${result.passed ? 'bg-[#3BAA7D] text-white' : 'bg-[#E61E2B] text-white'}`}>
+                    {result.passed ? '합격' : (result.failedSubject ? '불합격 (과목 과락)' : '불합격 (평균 미달)')}
+                  </div>
+                )}
+              </div>
+              {result.hasSubjects && (
+                <div className="space-y-3 pt-4 border-t border-white/10">
+                  {result.subjects.filter((s) => s.subjectNum > 0).map((s) => (
+                    <div key={s.subjectNum}>
+                      <div className="flex justify-between text-xs font-bold mb-1">
+                        <span className="text-gray-300">{subjectLabel(s.subjectNum)} ({s.correct}/{s.total})</span>
+                        <span className={s.score < 40 ? 'text-[#E61E2B]' : 'text-[#D9A23A]'}>
+                          {s.score}점{s.score < 40 ? ' 과락' : ''}
+                        </span>
+                      </div>
+                      <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                        <div className={`h-1.5 rounded-full ${s.score < 40 ? 'bg-[#E61E2B]' : 'bg-[#3BAA7D]'}`} style={{ width: `${s.score}%` }}></div>
+                      </div>
+                    </div>
+                  ))}
+                  <p className="text-[10px] text-gray-400 font-medium pt-1">합격 기준: 과목당 40점 이상 &amp; 전과목 평균 60점 이상</p>
+                </div>
+              )}
             </div>
-            <div className={`text-5xl font-mono font-black tracking-tighter ${timeLeft < 600 ? 'text-[#E61E2B]' : 'text-[#D9A23A]'}`}>
-              {formatTime(timeLeft)}
+          ) : (
+            <div className="bg-[#4A4F58] rounded-[32px] p-8 text-white shadow-2xl relative overflow-hidden text-center border border-gray-800">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16"></div>
+              <div className="text-gray-300 font-black text-xs mb-3 uppercase tracking-widest flex items-center justify-center">
+                <Timer size={16} className="mr-2" /> Remaining Time
+              </div>
+              <div className={`text-5xl font-mono font-black tracking-tighter ${timeLeft < 600 ? 'text-[#E61E2B]' : 'text-[#D9A23A]'}`}>
+                {formatTime(timeLeft)}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm flex-1 flex flex-col min-h-[300px]">
             <div className="flex justify-between items-center mb-8">
@@ -380,32 +497,30 @@ const StudyPage = () => {
               </span>
             </div>
 
-            <div className="grid grid-cols-5 gap-2.5 overflow-y-auto pr-2 flex-1 content-start custom-scrollbar">
-              {questions.map((question, idx) => {
-                const isAnswered = !!userAnswers[question.learnId]
-                const isCurrent = currentIndex === idx
-                let btnClass = 'bg-gray-50 text-gray-400 border-gray-100 hover:border-gray-300' // 기본 (안풂)
-
-                if (isGraded) {
-                  const isCorrect = String(userAnswers[question.learnId]) === String(question.answer)
-                  if (isCorrect) btnClass = 'bg-[#3BAA7D]/10 border-[#3BAA7D]/30 text-[#3BAA7D]' // 정답
-                  else if (isAnswered) btnClass = 'bg-[#E61E2B]/10 border-[#E61E2B]/30 text-[#E61E2B]' // 오답
-                  else btnClass = 'bg-gray-100 border-transparent text-gray-300' // 미응답
-                } else {
-                  if (isCurrent) btnClass = 'bg-[#3478B8] text-white border-[#3478B8] shadow-md shadow-[#3478B8]/20' // 현재 위치
-                  else if (isAnswered) btnClass = 'bg-[#3478B8]/10 border-[#3478B8]/20 text-[#3478B8]' // 푼 문제
-                }
-
-                return (
-                  <button
-                    key={question.learnId}
-                    onClick={() => setCurrentIndex(idx)}
-                    className={`h-12 rounded-xl text-sm font-black border transition-all flex items-center justify-center ${btnClass}`}
-                  >
-                    {isAnswered && !isGraded && !isCurrent ? <Check size={16} strokeWidth={3} /> : idx + 1}
-                  </button>
-                )
-              })}
+            <div className="overflow-y-auto pr-2 flex-1 custom-scrollbar space-y-5">
+              {omrGroups.map((group) => (
+                <div key={group.subjectNum}>
+                  {group.subjectNum > 0 && (
+                    <div className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 pl-0.5">
+                      {subjectLabel(group.subjectNum)}
+                    </div>
+                  )}
+                  <div className="grid grid-cols-5 gap-2.5 content-start">
+                    {group.items.map(({ question, idx }) => {
+                      const isAnswered = !!userAnswers[question.learnId]
+                      return (
+                        <button
+                          key={question.learnId}
+                          onClick={() => setCurrentIndex(idx)}
+                          className={`h-12 rounded-xl text-sm font-black border transition-all flex items-center justify-center ${omrBtnClass(question, idx)}`}
+                        >
+                          {isAnswered && !isGraded && currentIndex !== idx ? <Check size={16} strokeWidth={3} /> : idx + 1}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
