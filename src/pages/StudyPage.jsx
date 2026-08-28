@@ -224,7 +224,7 @@ const StudyPage = () => {
         : q)))
     } catch (error) {
       console.error('AI 해설 생성 실패:', error)
-      alert('AI 해설 생성에 실패했습니다. (서버의 ANTHROPIC_API_KEY 설정을 확인하세요)')
+      alert('AI 해설 생성에 실패했습니다. (서버의 GEMINI_API_KEY 설정 또는 무료 한도를 확인하세요)')
     } finally {
       setExplainingId(null)
     }
