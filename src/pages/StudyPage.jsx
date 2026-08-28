@@ -218,13 +218,27 @@ const StudyPage = () => {
     setExplainingId(learnId)
     try {
       const res = await examApi.generateExplanations([learnId])
-      const map = Object.fromEntries(res.data.map(e => [e.learnId, e.explanation]))
-      setQuestions(prev => prev.map(q => (map[q.learnId] ? { ...q, explanation: map[q.learnId] } : q)))
+      const map = Object.fromEntries(res.data.map(e => [e.learnId, e]))
+      setQuestions(prev => prev.map(q => (map[q.learnId]
+        ? { ...q, explanation: map[q.learnId].explanation, explanationAi: map[q.learnId].explanationAi }
+        : q)))
     } catch (error) {
       console.error('AI 해설 생성 실패:', error)
       alert('AI 해설 생성에 실패했습니다. (서버의 ANTHROPIC_API_KEY 설정을 확인하세요)')
     } finally {
       setExplainingId(null)
+    }
+  }
+
+  // AI 해설 신고 → 서버에서 제거되고, 화면에서도 숨겨 다시 생성 가능하게 한다
+  const reportExplanation = async (learnId) => {
+    if (!window.confirm('이 해설이 부정확한가요? 신고하면 숨겨지고 다시 생성할 수 있습니다.')) return
+    try {
+      await examApi.reportExplanation(learnId)
+      setQuestions(prev => prev.map(q => (q.learnId === learnId ? { ...q, explanation: '', explanationAi: false } : q)))
+    } catch (error) {
+      console.error('해설 신고 실패:', error)
+      alert('신고 처리에 실패했습니다.')
     }
   }
 
@@ -425,12 +439,25 @@ const StudyPage = () => {
 
               {isGraded && q.explanation && (
                 <div className="mt-10 p-6 rounded-[24px] bg-[#3BAA7D]/5 border border-[#3BAA7D]/20 text-[#4A4F58] text-sm leading-relaxed">
-                  <div className="flex items-center mb-3">
+                  <div className="flex items-center justify-between mb-3">
                     <span className="text-[#3BAA7D] font-black tracking-tight flex items-center">
                       <CheckCircle size={16} className="mr-1.5" /> 문제 해설
                     </span>
+                    {q.explanationAi && (
+                      <span className="text-[10px] font-black text-[#D9A23A] bg-[#D9A23A]/10 px-2.5 py-1 rounded-full flex items-center">
+                        <Zap size={12} className="mr-1" /> AI 생성 · 오류가 있을 수 있어요
+                      </span>
+                    )}
                   </div>
                   <p className="font-medium whitespace-pre-line text-gray-600">{q.explanation}</p>
+                  {q.explanationAi && (
+                    <button
+                      onClick={() => reportExplanation(q.learnId)}
+                      className="mt-4 text-[11px] font-bold text-gray-400 hover:text-[#E61E2B] underline underline-offset-2 transition-colors"
+                    >
+                      이 해설이 이상해요 (신고)
+                    </button>
+                  )}
                 </div>
               )}
 

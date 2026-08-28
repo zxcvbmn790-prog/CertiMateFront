@@ -5,4 +5,5 @@ export const examApi = {
   getMockExam: (certId) => apiClient.get(`/exams/${certId}/mock`),
   saveHistory: (payload) => apiClient.post('/exams/save-history', payload),
   generateExplanations: (learnIds) => apiClient.post('/exams/explanations', learnIds),
+  reportExplanation: (learnId) => apiClient.post(`/exams/${learnId}/report-explanation`),
 }
