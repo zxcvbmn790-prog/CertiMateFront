@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { userApi } from '../api/userApi'
 import {
   Calendar as CalIcon, MapPin, Navigation,
   Search, ChevronLeft, ChevronRight,
@@ -7,14 +9,25 @@ import {
 import ExamLocationMap from '../components/ExamLocationMap'
 
 const CalendarPage = () => {
-  // 상태 관리: 선택된 날짜, 필터(전체/내 일정)
-  const [activeFilter, setActiveFilter] = useState('mine') // 'all' or 'mine'
+  const navigate = useNavigate();
+  const [activeFilter, setActiveFilter] = useState('mine');
+  const [dashboard, setDashboard] = useState(null);
 
-  // 가상의 일정 데이터
-  const mySchedules = [
-    { id: 1, name: '산업안전산업기사 (필기)', date: '2026.05.20', dday: 'D-11', type: 'exam', color: '#D9A23A' },
-    { id: 2, name: '정보처리산업기사 (실기 접수)', date: '2026.05.15', dday: 'D-6', type: 'reg', color: '#3478B8' }
-  ]
+  useEffect(() => {
+    userApi.getDashboard().then(res => setDashboard(res.data)).catch(console.error);
+  }, []);
+
+  const mySchedules = dashboard?.targetExam ? [
+    { 
+      id: 1, 
+      name: `${dashboard.targetExam.certName} (${dashboard.targetExam.examType})`, 
+      date: dashboard.targetExam.examDate, 
+      dday: dashboard.targetExam.dDay <= 0 ? 'D-Day' : `D-${dashboard.targetExam.dDay}`, 
+      type: 'exam', 
+      color: '#D9A23A',
+      examDateObj: new Date(dashboard.targetExam.examDate)
+    }
+  ] : [];
 
   // 현재 선택된 고사장 상태 관리 (기본값 설정)
   const [selectedLocation, setSelectedLocation] = useState({
@@ -56,7 +69,7 @@ const CalendarPage = () => {
           <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
             <div className="flex justify-between items-center mb-8">
               <h3 className="text-xl font-black flex items-center">
-                2026년 5월
+                {mySchedules.length > 0 && mySchedules[0].examDateObj ? `${mySchedules[0].examDateObj.getFullYear()}년 ${mySchedules[0].examDateObj.getMonth() + 1}월` : '2026년 5월'}
               </h3>
               <div className="flex space-x-2">
                 <button className="p-2 hover:bg-gray-100 rounded-xl transition text-gray-400"><ChevronLeft size={20}/></button>
@@ -72,8 +85,9 @@ const CalendarPage = () => {
             <div className="grid grid-cols-7 gap-2">
               {[...Array(31)].map((_, i) => {
                 const day = i + 1
-                const isExam = day === 20
-                const isReg = day === 15
+                const examObj = mySchedules.find(s => s.examDateObj && s.examDateObj.getDate() === day);
+                const isExam = !!examObj;
+                const isReg = false;
                 return (
                   <div key={i} className={`h-28 p-3 rounded-2xl border transition group cursor-pointer ${
                     isExam ? 'bg-[#D9A23A]/5 border-[#D9A23A]/30' :
@@ -127,43 +141,52 @@ const CalendarPage = () => {
             </div>
           </div>
 
-          {/* 고사장 지도 위젯 */}
+          {/* 고사장 검색 위젯 */}
           <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-black flex items-center">
-                <MapPin className="mr-2 text-[#3BAA7D]" size={18} /> 고사장 안내
+                <Search className="mr-2 text-[#3478B8]" size={18} /> 고사장 검색
               </h3>
-              <Search size={16} className="text-gray-300 cursor-pointer hover:text-[#3478B8]" />
             </div>
+            
+            <p className="text-xs text-gray-500 mb-4 font-bold">지역명을 검색하거나 선택하여 고사장을 찾아보세요.</p>
 
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              <select className="text-[10px] font-bold p-2 bg-gray-50 border border-gray-100 rounded-xl outline-none">
-                <option>서울특별시</option>
-              </select>
-              <select className="text-[10px] font-bold p-2 bg-gray-50 border border-gray-100 rounded-xl outline-none">
-                <option>강서구</option>
-              </select>
-            </div>
-
-            {/* 카카오 지도 영역 */}
-            <div className="rounded-[24px] mb-6 relative overflow-hidden border border-gray-100 group">
-              <ExamLocationMap
-                address={selectedLocation.address}
-                centerName={selectedLocation.centerName}
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const val = e.target.search.value.trim();
+              if (val) navigate(`/exam-locations?query=${encodeURIComponent(val)}`);
+            }} className="relative mb-4">
+              <input 
+                name="search"
+                type="text" 
+                placeholder="지역명 검색 (예: 강남구)" 
+                className="w-full text-sm font-bold p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#3478B8] transition-colors"
               />
-              <button className="absolute bottom-4 right-4 z-10 bg-white p-3 rounded-2xl shadow-xl text-[#3478B8] hover:scale-110 transition-transform">
-                <Navigation size={18} fill="#3478B8" />
+              <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2 text-[#3478B8] p-2 hover:bg-gray-100 rounded-lg">
+                <Search size={18} />
               </button>
-            </div>
+            </form>
 
-            <div className="space-y-3">
-              <div className="p-4 bg-gray-50 rounded-2xl border border-transparent hover:border-[#3478B8] transition cursor-pointer group">
-                <div className="flex justify-between items-center">
-                  <h4 className="text-sm font-bold group-hover:text-[#3478B8]">{selectedLocation.centerName}</h4>
-                  <Info size={14} className="text-gray-300" />
-                </div>
-                <p className="text-[10px] text-gray-400 mt-1">{selectedLocation.address} | 1.2km</p>
-              </div>
+            <div className="grid grid-cols-2 gap-2">
+              <select onChange={(e) => { if(e.target.value !== 'default') navigate(`/exam-locations?query=${encodeURIComponent(e.target.value)}`) }} defaultValue="default" className="text-sm font-bold p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#3478B8] cursor-pointer">
+                <option value="default" disabled hidden>주요 시/도</option>
+                <option value="서울특별시">서울특별시</option>
+                <option value="경기도">경기도</option>
+                <option value="인천광역시">인천광역시</option>
+                <option value="부산광역시">부산광역시</option>
+                <option value="대구광역시">대구광역시</option>
+                <option value="광주광역시">광주광역시</option>
+                <option value="대전광역시">대전광역시</option>
+              </select>
+              <select onChange={(e) => { if(e.target.value !== 'default') navigate(`/exam-locations?query=${encodeURIComponent(e.target.value)}`) }} defaultValue="default" className="text-sm font-bold p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#3478B8] cursor-pointer">
+                <option value="default" disabled hidden>주요 구</option>
+                <option value="강남구">강남구</option>
+                <option value="서초구">서초구</option>
+                <option value="송파구">송파구</option>
+                <option value="영등포구">영등포구</option>
+                <option value="마포구">마포구</option>
+                <option value="강서구">강서구</option>
+              </select>
             </div>
           </div>
         </div>

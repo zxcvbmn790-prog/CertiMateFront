@@ -1,15 +1,31 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Search, MapPin, Navigation, Loader2 } from 'lucide-react'
 import { examApi } from '../api/examApi'
 import ExamLocationsMap from '../components/ExamLocationsMap'
 
 const ExamLocationsPage = () => {
+  const location = useLocation();
   const [query, setQuery] = useState('')
   const [locations, setLocations] = useState([])
   const [selectedId, setSelectedId] = useState(null)
   const [loading, setLoading] = useState(false)
   const [mode, setMode] = useState(null) // 'search' | 'near'
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const initialQuery = params.get('query') || location.state?.query;
+    if (initialQuery) {
+      setQuery(initialQuery);
+      setLoading(true); setError(''); setSelectedId(null);
+      examApi.searchLocations(initialQuery.trim())
+        .then(res => { setLocations(res.data); setMode('search'); })
+        .catch(() => setError('검색에 실패했습니다.'))
+        .finally(() => setLoading(false));
+    }
+  }, [location]);
+
 
   const handleSearch = async (e) => {
     e?.preventDefault()

@@ -568,8 +568,8 @@ const ProfilePage = () => {
               <div>
                 <label className="block text-sm font-bold text-gray-600 mb-1">시험 종류</label>
                 <select value={scheduleForm.examType} onChange={e => setScheduleForm({ ...scheduleForm, examType: e.target.value })} className="w-full border border-gray-200 focus:border-[#3478B8] rounded-xl px-4 py-3 text-sm outline-none transition appearance-none" required>
-                  <option value="필기">필기</option>
-                  <option value="실기">실기</option>
+                    <option value="필기">필기</option>
+                    <option value="실기">실기</option>
                 </select>
               </div>
               <div>
