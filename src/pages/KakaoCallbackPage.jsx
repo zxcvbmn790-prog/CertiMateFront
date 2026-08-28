@@ -1,11 +1,16 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authApi } from '../api/authApi'
 
 const KakaoCallbackPage = () => {
   const navigate = useNavigate()
+  const calledRef = useRef(false)
 
   useEffect(() => {
+    // StrictMode 이중 실행 방지: auth code는 1회용이라 두 번 교환하면 두 번째가 실패한다
+    if (calledRef.current) return
+    calledRef.current = true
+
     const code = new URL(window.location.href).searchParams.get('code')
 
     const sendKakaoCode = async () => {
