@@ -18,7 +18,7 @@ const StudyPage = () => {
   const [questions, setQuestions] = useState([])
   const [userAnswers, setUserAnswers] = useState({})
   const [isLoading, setIsLoading] = useState(false)
-  const [explaining, setExplaining] = useState(false)
+  const [explainingId, setExplainingId] = useState(null) // AI 해설 생성 중인 문제의 learnId
 
   // 타이머 상태 (90분 = 5400초)
   const [timeLeft, setTimeLeft] = useState(5400)
@@ -190,21 +190,6 @@ const StudyPage = () => {
     setIsGraded(true)
     setCurrentIndex(0)
 
-    // 채점 시 해설이 없는 문제들은 AI로 일괄 생성해 채워 넣는다 (생성된 해설은 서버가 DB에 영구 저장)
-    const missing = questions.filter(q => !q.explanation || String(q.explanation).trim() === '')
-    if (missing.length > 0) {
-      setExplaining(true)
-      try {
-        const res = await examApi.generateExplanations(missing.map(q => q.learnId))
-        const map = Object.fromEntries(res.data.map(e => [e.learnId, e.explanation]))
-        setQuestions(prev => prev.map(q => (map[q.learnId] ? { ...q, explanation: map[q.learnId] } : q)))
-      } catch (error) {
-        console.error('AI 해설 생성 실패:', error)
-      } finally {
-        setExplaining(false)
-      }
-    }
-
     const historyPayload = questions.map(q => {
       const uAnswer = userAnswers[q.learnId] || ''
       const correct = String(uAnswer) === String(q.answer)
@@ -225,6 +210,21 @@ const StudyPage = () => {
       alert('수고하셨습니다! 결과가 오답노트에 저장되었습니다.')
     } catch (error) {
       console.error('오답노트 저장 실패:', error)
+    }
+  }
+
+  // 온디맨드: 해설 없는 문제에 대해 이 문제만 AI 해설 생성 (생성 결과는 서버가 DB에 영구 저장)
+  const generateExplanation = async (learnId) => {
+    setExplainingId(learnId)
+    try {
+      const res = await examApi.generateExplanations([learnId])
+      const map = Object.fromEntries(res.data.map(e => [e.learnId, e.explanation]))
+      setQuestions(prev => prev.map(q => (map[q.learnId] ? { ...q, explanation: map[q.learnId] } : q)))
+    } catch (error) {
+      console.error('AI 해설 생성 실패:', error)
+      alert('AI 해설 생성에 실패했습니다. (서버의 ANTHROPIC_API_KEY 설정을 확인하세요)')
+    } finally {
+      setExplainingId(null)
     }
   }
 
@@ -434,9 +434,16 @@ const StudyPage = () => {
                 </div>
               )}
 
-              {isGraded && !q.explanation && explaining && (
-                <div className="mt-10 p-6 rounded-[24px] bg-[#3478B8]/5 border border-[#3478B8]/20 text-[#3478B8] text-sm font-bold flex items-center">
-                  <Zap size={16} className="mr-2 animate-pulse" /> AI가 해설을 생성하고 있습니다...
+              {isGraded && !q.explanation && (
+                <div className="mt-10">
+                  <button
+                    onClick={() => generateExplanation(q.learnId)}
+                    disabled={explainingId === q.learnId}
+                    className="w-full py-5 rounded-[24px] font-black text-[15px] transition-all border-2 border-dashed border-[#3478B8]/30 text-[#3478B8] bg-[#3478B8]/5 hover:bg-[#3478B8]/10 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <Zap size={16} className={`mr-2 ${explainingId === q.learnId ? 'animate-pulse' : ''}`} />
+                    {explainingId === q.learnId ? 'AI가 해설을 생성 중입니다...' : '이 문제 AI 해설 보기'}
+                  </button>
                 </div>
               )}
             </div>
