@@ -55,6 +55,10 @@ function Header() {
                 CertiMate
               </span>
             </Link>
+            <div className="hidden sm:flex items-center ml-6 gap-1">
+              <Link to="/study" className="text-sm font-medium text-slate-600 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-50 transition">모의고사</Link>
+              <Link to="/exam-locations" className="text-sm font-medium text-slate-600 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-50 transition">시험장 찾기</Link>
+            </div>
           </div>
 
           <div className="flex items-center space-x-3">

@@ -10,6 +10,7 @@ import AdminPage from '../pages/AdminPage'
 import FindPasswordPage from '../pages/FindPasswordPage'
 import KakaoCallbackPage from '../pages/KakaoCallbackPage'
 import GoogleCallbackPage from '../pages/GoogleCallbackPage'
+import ExamLocationsPage from '../pages/ExamLocationsPage'
 import NotFoundPage from '../pages/NotFoundPage'
 
 function AppRouter() {
@@ -17,6 +18,7 @@ function AppRouter() {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/study" element={<StudyPage />} />
+      <Route path="/exam-locations" element={<ExamLocationsPage />} />
       <Route path="/calendar" element={<CalendarPage />} />
       <Route path="/community" element={<CommunityPage />} />
       <Route path="/profile" element={<ProfilePage />} />
