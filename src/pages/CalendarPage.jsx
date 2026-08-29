@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { userApi } from '../api/userApi'
+import { examApi } from '../api/examApi'
 import {
   Calendar as CalIcon, MapPin, Navigation,
   Search, ChevronLeft, ChevronRight,
@@ -18,18 +19,68 @@ const CalendarPage = () => {
   }, []);
 
   const mySchedules = dashboard?.targetExam ? [
-    { 
-      id: 1, 
-      name: `${dashboard.targetExam.certName} (${dashboard.targetExam.examType})`, 
-      date: dashboard.targetExam.examDate, 
-      dday: dashboard.targetExam.dDay <= 0 ? 'D-Day' : `D-${dashboard.targetExam.dDay}`, 
-      type: 'exam', 
-      color: '#D9A23A',
-      examDateObj: new Date(dashboard.targetExam.examDate)
-    }
-  ] : [];
+      { 
+        id: 1, 
+        name: `${dashboard.targetExam.certName} (${dashboard.targetExam.examType})`, 
+        date: dashboard.targetExam.examDate, 
+        dday: dashboard.targetExam.dDay <= 0 ? 'D-Day' : `D-${dashboard.targetExam.dDay}`, 
+        type: 'exam', 
+        examType: dashboard.targetExam.examType,
+        color: '#D9A23A',
+        examDateObj: new Date(dashboard.targetExam.examDate)
+      }
+    ] : [];
 
   // 현재 선택된 고사장 상태 관리 (기본값 설정)
+
+  const [allSchedules, setAllSchedules] = useState([]);
+  useEffect(() => {
+    examApi.getAllSchedules().then(res => {
+            const mapped = res.data.map((s, idx) => {
+        const dObj = new Date(s.examDate);
+        const diff = Math.ceil((dObj - new Date()) / (1000 * 60 * 60 * 24));
+        return {
+          id: `all-${idx}`,
+          name: `${s.qualName} (${s.examRound || s.examType})`,
+          date: s.examDate,
+          dday: diff <= 0 ? 'D-Day' : `D-${diff}`,
+          type: 'exam',
+          examType: s.examType || '필기', // Default to 필기 if empty
+          color: '#3BAA7D',
+          examDateObj: dObj
+        };
+      });
+      setAllSchedules(mapped);
+    }).catch(console.error);
+  }, []);
+
+  const displayedSchedules = activeFilter === 'mine' ? mySchedules : allSchedules;
+  
+  const [viewYear, setViewYear] = useState(new Date().getFullYear());
+  const [viewMonth, setViewMonth] = useState(new Date().getMonth());
+
+  const handlePrevMonth = () => {
+    if (viewMonth === 0) {
+      setViewMonth(11);
+      setViewYear(y => y - 1);
+    } else {
+      setViewMonth(m => m - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (viewMonth === 11) {
+      setViewMonth(0);
+      setViewYear(y => y + 1);
+    } else {
+      setViewMonth(m => m + 1);
+    }
+  };
+
+  const firstDayOfMonth = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+
   const [selectedLocation, setSelectedLocation] = useState({
     centerName: '서울디지털대학교',
     address: '서울 강서구 화곡로 302'
@@ -69,39 +120,46 @@ const CalendarPage = () => {
           <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
             <div className="flex justify-between items-center mb-8">
               <h3 className="text-xl font-black flex items-center">
-                {mySchedules.length > 0 && mySchedules[0].examDateObj ? `${mySchedules[0].examDateObj.getFullYear()}년 ${mySchedules[0].examDateObj.getMonth() + 1}월` : '2026년 5월'}
-              </h3>
-              <div className="flex space-x-2">
-                <button className="p-2 hover:bg-gray-100 rounded-xl transition text-gray-400"><ChevronLeft size={20}/></button>
-                <button className="p-2 hover:bg-gray-100 rounded-xl transition text-gray-400"><ChevronRight size={20}/></button>
-              </div>
+                  {`${viewYear}년 ${viewMonth + 1}월`}
+                </h3>
+                <div className="flex space-x-2">
+                  <button onClick={handlePrevMonth} className="p-2 hover:bg-gray-100 rounded-xl transition text-gray-400"><ChevronLeft size={20}/></button>
+                  <button onClick={handleNextMonth} className="p-2 hover:bg-gray-100 rounded-xl transition text-gray-400"><ChevronRight size={20}/></button>
+                </div>
             </div>
 
             <div className="grid grid-cols-7 mb-4">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
                 <div key={day} className="text-center text-[10px] font-black text-gray-300 uppercase tracking-widest py-2">{day}</div>
               ))}
-            </div>
+              </div>
             <div className="grid grid-cols-7 gap-2">
-              {[...Array(31)].map((_, i) => {
-                const day = i + 1
-                const examObj = mySchedules.find(s => s.examDateObj && s.examDateObj.getDate() === day);
-                const isExam = !!examObj;
-                const isReg = false;
-                return (
-                  <div key={i} className={`h-28 p-3 rounded-2xl border transition group cursor-pointer ${
-                    isExam ? 'bg-[#D9A23A]/5 border-[#D9A23A]/30' :
-                    isReg ? 'bg-[#3478B8]/5 border-[#3478B8]/30' :
-                    'bg-gray-50 border-transparent hover:border-gray-200'
-                  }`}>
-                    <span className={`text-sm font-black ${isExam ? 'text-[#D9A23A]' : isReg ? 'text-[#3478B8]' : 'text-gray-400'}`}>
-                      {day}
-                    </span>
-                    {isReg && <div className="mt-2 text-[9px] font-black bg-[#3478B8] text-white p-1.5 rounded-lg leading-tight">접수 시작</div>}
-                    {isExam && <div className="mt-2 text-[9px] font-black bg-[#D9A23A] text-white p-1.5 rounded-lg leading-tight">필기 시험</div>}
-                  </div>
-                )
-              })}
+              {[...Array(firstDayOfMonth)].map((_, i) => (
+                  <div key={`empty-${i}`} className="h-28 p-3 rounded-2xl border border-transparent"></div>
+                ))}
+                {[...Array(daysInMonth)].map((_, i) => {
+                  const day = i + 1;
+                  const examsOnDay = displayedSchedules.filter(s => s.examDateObj && s.examDateObj.getDate() === day && s.examDateObj.getMonth() === viewMonth && s.examDateObj.getFullYear() === viewYear);
+                  const isExam = examsOnDay.length > 0;
+                  const isReg = false;
+                  return (
+                    <div key={i} className={`h-28 p-2 rounded-2xl border transition group cursor-pointer overflow-y-auto ${
+                      isExam ? 'bg-[#D9A23A]/5 border-[#D9A23A]/30' :
+                      isReg ? 'bg-[#3478B8]/5 border-[#3478B8]/30' :
+                      'bg-gray-50 border-transparent hover:border-gray-200'
+                    }`}>
+                      <span className={`text-sm font-black ${isExam ? 'text-[#D9A23A]' : isReg ? 'text-[#3478B8]' : 'text-gray-400'}`}>
+                        {day}
+                      </span>
+                      {isReg && <div className="mt-1 text-[9px] font-black bg-[#3478B8] text-white p-1 rounded-md truncate">접수 시작</div>}
+                      {examsOnDay.map((eObj, idx) => (
+                        <div key={idx} className="mt-1 text-[9px] font-black bg-[#D9A23A] text-white p-1 rounded-md truncate">
+                          {eObj.name.split(' ')[0]} {eObj.examType}
+                        </div>
+                      ))}
+                    </div>
+                  )
+                })}
             </div>
           </div>
 
@@ -127,7 +185,20 @@ const CalendarPage = () => {
               <Clock className="mr-2 text-[#3BAA7D]" size={18} /> 다가오는 일정
             </h3>
             <div className="space-y-4">
-              {mySchedules.map(item => (
+              
+              {(() => {
+                const upcomingList = activeFilter === 'all' 
+                  ? displayedSchedules.filter(s => {
+                      if (!s.examDateObj) return false;
+                      const diff = Math.ceil((s.examDateObj.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                      return diff >= 0 && diff <= 14;
+                    })
+                  : displayedSchedules;
+                  
+                if (upcomingList.length === 0) return <div className="p-4 text-center text-gray-400 font-bold text-sm">다가오는 일정이 없습니다.</div>;
+                
+                return upcomingList.map(item => (
+
                 <div key={item.id} className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition cursor-pointer group">
                   <div className="flex justify-between items-start">
                     <div>
@@ -137,7 +208,8 @@ const CalendarPage = () => {
                     <span className="text-xs font-black" style={{ color: item.color }}>{item.dday}</span>
                   </div>
                 </div>
-              ))}
+              ));
+              })()}
             </div>
           </div>
 
@@ -167,8 +239,8 @@ const CalendarPage = () => {
               </button>
             </form>
 
-            <div className="grid grid-cols-2 gap-2">
-              <select onChange={(e) => { if(e.target.value !== 'default') navigate(`/exam-locations?query=${encodeURIComponent(e.target.value)}`) }} defaultValue="default" className="text-sm font-bold p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#3478B8] cursor-pointer">
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <select id="citySelect" defaultValue="default" className="text-sm font-bold p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#3478B8] cursor-pointer">
                 <option value="default" disabled hidden>주요 시/도</option>
                 <option value="서울특별시">서울특별시</option>
                 <option value="경기도">경기도</option>
@@ -178,7 +250,7 @@ const CalendarPage = () => {
                 <option value="광주광역시">광주광역시</option>
                 <option value="대전광역시">대전광역시</option>
               </select>
-              <select onChange={(e) => { if(e.target.value !== 'default') navigate(`/exam-locations?query=${encodeURIComponent(e.target.value)}`) }} defaultValue="default" className="text-sm font-bold p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#3478B8] cursor-pointer">
+              <select id="districtSelect" defaultValue="default" className="text-sm font-bold p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#3478B8] cursor-pointer">
                 <option value="default" disabled hidden>주요 구</option>
                 <option value="강남구">강남구</option>
                 <option value="서초구">서초구</option>
@@ -188,6 +260,14 @@ const CalendarPage = () => {
                 <option value="강서구">강서구</option>
               </select>
             </div>
+            <button onClick={() => {
+              const city = document.getElementById('citySelect').value;
+              const dist = document.getElementById('districtSelect').value;
+              const query = [city, dist].filter(v => v !== 'default').join(' ');
+              if(query) navigate(`/exam-locations?query=${encodeURIComponent(query)}`);
+            }} className="w-full py-3 bg-gray-100 text-gray-500 hover:bg-[#3478B8] hover:text-white font-bold rounded-xl transition text-sm">
+              선택한 지역으로 검색
+            </button>
           </div>
         </div>
       </div>
