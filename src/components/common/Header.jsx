@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { authApi } from '../../api/authApi'
 
 function Header() {
   const navigate = useNavigate()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [elapsedTime, setElapsedTime] = useState('00:00:00')
+  const [profile, setProfile] = useState({ name: '', profileImage: null })
 
   useEffect(() => {
     const checkAuth = () => {
@@ -13,6 +15,11 @@ function Header() {
 
       if (loggedIn && loginTime) {
         setIsLoggedIn(true)
+
+        // 로그인 상태면 내 정보(프로필 사진) 불러와 아바타 표시
+        authApi.getMe()
+          .then((res) => setProfile({ name: res.data.name || '', profileImage: res.data.profileImage || null }))
+          .catch(() => {})
 
         const timer = setInterval(() => {
           const now = new Date().getTime()
@@ -49,6 +56,22 @@ function Header() {
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0 flex items-center">
+            {isLoggedIn && (
+              <Link to="/profile" title="내정보" className="mr-3 shrink-0">
+                {profile.profileImage ? (
+                  <img
+                    src={profile.profileImage}
+                    alt="프로필"
+                    referrerPolicy="no-referrer"
+                    className="w-9 h-9 rounded-full object-cover border border-slate-200 hover:ring-2 hover:ring-blue-400 transition"
+                  />
+                ) : (
+                  <span className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 font-black flex items-center justify-center border border-slate-200">
+                    {(profile.name || 'U').charAt(0)}
+                  </span>
+                )}
+              </Link>
+            )}
             <Link to="/" className="flex items-center gap-2">
               <span className="text-blue-600 text-2xl">📘</span>
               <span className="text-xl font-extrabold text-blue-600 tracking-tighter">
