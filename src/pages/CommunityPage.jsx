@@ -122,12 +122,21 @@ const CommunityPage = () => {
     const updatedPosts = allPosts.map(p => p.id === post.id ? updatedPost : p)
     setAllPosts(updatedPosts)
     setSelectedPost(updatedPost)
+    // 브라우저 뒤로가기가 홈이 아니라 목록으로 돌아오도록 히스토리 항목 추가
+    window.history.pushState({ communityDetail: true }, '')
   }
 
-  // 상세 화면에서 뒤로 가기
+  // 상세 화면에서 뒤로 가기 (인페이지 버튼 → 브라우저 back과 동일 경로)
   const handleGoBack = () => {
-    setSelectedPost(null)
+    window.history.back()
   }
+
+  // 브라우저 뒤로가기 → 상세 닫고 목록으로
+  useEffect(() => {
+    const onPop = () => setSelectedPost(null)
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
 
   // 댓글 등록 함수
   const handleAddComment = () => {
