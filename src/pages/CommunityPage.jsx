@@ -117,13 +117,21 @@ const CommunityPage = () => {
   }
 
   // 게시글 클릭 시 상세 화면으로 이동
-  const handlePostClick = (post) => {
-    const updatedPost = { ...post, views: post.views + 1 }
-    const updatedPosts = allPosts.map(p => p.id === post.id ? updatedPost : p)
-    setAllPosts(updatedPosts)
-    setSelectedPost(updatedPost)
+  const handlePostClick = async (post) => {
     // 브라우저 뒤로가기가 홈이 아니라 목록으로 돌아오도록 히스토리 항목 추가
     window.history.pushState({ communityDetail: true }, '')
+    // 공지(하드코딩)는 DB에 없으므로 로컬로만 표시
+    if (post.isNotice) { setSelectedPost(post); return }
+    try {
+      // 백엔드가 조회수를 +1 하고 DB에 저장한 뒤 최신 글을 반환 (조회수 유지)
+      const data = await communityApi.getPost(post.id)
+      const mapped = mapPost(data)
+      setSelectedPost(mapped)
+      setAllPosts(prev => prev.map(p => p.id === post.id ? { ...p, views: mapped.views } : p))
+    } catch (err) {
+      console.error('게시글 상세 조회 실패:', err)
+      setSelectedPost(post)
+    }
   }
 
   // 상세 화면에서 뒤로 가기 (인페이지 버튼 → 브라우저 back과 동일 경로)
