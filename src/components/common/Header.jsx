@@ -56,6 +56,9 @@ function Header() {
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0 flex items-center">
+            <Link to="/" className="text-xl font-extrabold text-blue-600 tracking-tighter mr-6">
+              CertiMate
+            </Link>
             <div className="hidden sm:flex items-center gap-1">
               <Link to="/study" className="text-sm font-medium text-slate-600 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-50 transition">모의고사</Link>
               <Link to="/exam-locations" className="text-sm font-medium text-slate-600 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-50 transition">시험장 찾기</Link>

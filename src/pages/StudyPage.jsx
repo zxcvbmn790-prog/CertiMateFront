@@ -5,9 +5,18 @@ import {
   RotateCcw, ChevronLeft, ChevronRight, Check, Zap
 } from 'lucide-react'
 import { examApi } from '../api/examApi'
+import { authApi } from '../api/authApi'
 
 const StudyPage = () => {
   const location = useLocation()
+  const [userName, setUserName] = useState('')
+
+  // 로그인 상태면 이름을 불러와 인사말에 사용 (하드코딩 제거)
+  useEffect(() => {
+    if (localStorage.getItem('isLoggedIn') === 'true') {
+      authApi.getMe().then((res) => setUserName(res.data.name || '')).catch(() => {})
+    }
+  }, [])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCert, setSelectedCert] = useState(null)
   const [isStarted, setIsStarted] = useState(false)
@@ -272,7 +281,7 @@ const StudyPage = () => {
               <span className="text-[10px] font-black text-[#3478B8] uppercase tracking-widest">AI Mock Exam System</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-black mb-8 leading-[1.15]">
-              성찬님을 위한, <br />
+              {userName ? `${userName}님을 위한` : '당신을 위한'}, <br />
               <span className="text-[#3478B8]">실전 AI 모의고사</span>
             </h1>
             <p className="text-gray-400 text-lg mb-12 font-medium max-w-2xl mx-auto">
