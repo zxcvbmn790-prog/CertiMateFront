@@ -1,3 +1,4 @@
+import RecommendationPage from '../pages/RecommendationPage';
 import { Route, Routes } from 'react-router-dom'
 import HomePage from '../pages/HomePage'
 import StudyPage from '../pages/StudyPage'
@@ -28,6 +29,7 @@ function AppRouter() {
       <Route path="/find-password" element={<FindPasswordPage />} />
       <Route path="/auth/kakao/callback" element={<KakaoCallbackPage />} />
       <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
+      <Route path="/recommend" element={<RecommendationPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
