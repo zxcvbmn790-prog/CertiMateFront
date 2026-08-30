@@ -1,129 +1,168 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { BookOpen, Calendar, MessageSquare, User, Info, Phone, ArrowRight, Target } from 'lucide-react'
 
 const HomePage = () => {
-  const [searchKeyword, setSearchKeyword] = useState('')
   const navigate = useNavigate()
 
-  const handleSearch = () => {
-    if (!searchKeyword.trim()) {
-      alert('검색어를 입력해 주세요!')
-      return
-    }
-    alert(`"${searchKeyword}" 자격증을 검색합니다! (기능 준비중)`)
-  }
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      handleSearch()
+  const handleNav = (link) => {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'
+    if (!isLoggedIn) {
+      alert('로그인이 필요한 서비스입니다. 로그인 화면으로 이동합니다.')
+      navigate('/login')
+    } else {
+      navigate(link)
     }
   }
 
   return (
-    <div className="relative w-full min-h-[calc(100vh-64px)] flex flex-col justify-between overflow-hidden bg-slate-900">
-      {/* 배경 이미지 영역 */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
-        style={{ backgroundImage: "url('/background.jpg')" }}
-      >
-        <div className="absolute inset-0 bg-black/50"></div>
+    <div className="w-full min-h-[calc(100vh-64px)] bg-slate-50 flex flex-col items-center pb-12">
+      {/* Top Banner */}
+      <div className="w-full bg-[#3478B8]/10 py-3 flex justify-center items-center text-sm font-bold text-[#3478B8]">
+        <span className="bg-[#3478B8] text-white px-2 py-0.5 rounded text-xs mr-3">안내</span>
+        [공지] 2026년 하반기 정보처리기사 실기 시험 접수 안내
+        <span className="ml-4 text-xs font-normal underline cursor-pointer">자세히보기 &gt;</span>
       </div>
 
-      {/* 메인 콘텐츠 영역 (타이틀 및 검색창) */}
-      <div className="relative z-10 w-full max-w-screen-2xl mx-auto px-6 sm:px-12 lg:px-20 flex-1 flex flex-col justify-center">
-        <div className="max-w-3xl animate-fade-in-up text-left">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl text-white font-bold leading-tight tracking-tight mb-6">
-            내일을 바꾸는<br />당신의 첫걸음
-          </h1>
-          <p className="text-blue-200 text-lg md:text-xl mb-10 font-medium">
-            맞춤형 자격증 추천부터 기출문제 학습까지,<br />모든 것을 한 곳에서 해결하세요 CertiMate
-          </p>
+      <div className="max-w-7xl w-full px-4 pt-10">
+        
+        {/* Main Grid: 12 Columns */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-8">
+          
+          {/* Box 1 (Left, Col-4) - CBT Mock Exam */}
+          <div 
+            onClick={() => handleNav('/study')}
+            className="md:col-span-4 bg-[#3478B8] rounded-[32px] p-8 text-white relative overflow-hidden cursor-pointer group shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
+          >
+            <div className="relative z-10 h-full flex flex-col justify-between min-h-[280px]">
+              <div>
+                <h2 className="text-3xl font-black mb-3 leading-snug">실전 CBT<br/>모의고사</h2>
+                <p className="text-blue-100 font-medium text-sm leading-relaxed">CertiMate에서 기출문제를<br/>더 완벽하게 준비하세요!</p>
+              </div>
+              <div className="space-y-3 mt-8">
+                <button className="w-full flex items-center justify-between border border-white/30 rounded-full px-5 py-3 text-sm font-bold hover:bg-white/10 transition">
+                  기출문제 풀기 <ArrowRight size={16} />
+                </button>
+                <button className="w-full flex items-center justify-between border border-white/30 rounded-full px-5 py-3 text-sm font-bold hover:bg-white/10 transition">
+                  내 오답노트 <ArrowRight size={16} />
+                </button>
+              </div>
+            </div>
+            {/* Background Icon */}
+            <BookOpen className="absolute -bottom-6 -right-6 w-48 h-48 text-white/10 group-hover:scale-110 transition-transform duration-500" />
+          </div>
 
-          {/* 검색창 컨테이너 */}
-          <div className="bg-white rounded-full flex items-center px-6 py-4 mb-8 w-full max-w-xl shadow-2xl">
-            <input
-              type="text"
-              value={searchKeyword}
-              onChange={(e) => setSearchKeyword(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="관심있는 자격증을 검색해보세요"
-              className="flex-1 outline-none text-slate-800 text-lg bg-transparent"
-            />
-            <button
-              onClick={handleSearch}
-              className="text-slate-400 hover:text-blue-600 transition-colors"
+          {/* Box 2 (Middle, Col-3) - Stacked Cards */}
+          <div className="md:col-span-3 flex flex-col gap-6">
+            {/* Top - Calendar */}
+            <div 
+              onClick={() => handleNav('/calendar')}
+              className="flex-1 bg-[#3BAA7D] rounded-[32px] p-7 text-white cursor-pointer group shadow-md hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col justify-between relative overflow-hidden"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
+              <div>
+                <h3 className="text-xl font-black mb-1">시험 일정 캘린더</h3>
+                <p className="text-green-100 text-xs font-medium">놓치기 쉬운 일정 한눈에</p>
+              </div>
+              <div className="flex justify-between items-end mt-6">
+                <span className="text-xs font-bold flex items-center">바로가기 <ArrowRight size={12} className="ml-1" /></span>
+                <Calendar className="w-12 h-12 text-white/80 group-hover:scale-110 transition-transform" strokeWidth={1.5} />
+              </div>
+            </div>
+            {/* Bottom - My Progress */}
+            <div 
+              onClick={() => handleNav('/profile')}
+              className="flex-1 bg-[#D9A23A] rounded-[32px] p-7 text-white cursor-pointer group shadow-md hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col justify-between relative overflow-hidden"
+            >
+              <div>
+                <h3 className="text-xl font-black mb-1">내 학습 진도</h3>
+                <p className="text-yellow-100 text-xs font-medium">합격을 향한 발자취</p>
+              </div>
+              <div className="flex justify-between items-end mt-6">
+                <span className="text-xs font-bold flex items-center">바로가기 <ArrowRight size={12} className="ml-1" /></span>
+                <Target className="w-12 h-12 text-white/80 group-hover:scale-110 transition-transform" strokeWidth={1.5} />
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            <CategoryPill text="정보처리기사" active={true} onClick={() => setSearchKeyword('정보처리기사')} />
-            <CategoryPill text="한국사능력검정" onClick={() => setSearchKeyword('한국사능력검정')} />
-            <CategoryPill text="IT/컴퓨터" onClick={() => setSearchKeyword('IT/컴퓨터')} />
-            <CategoryPill text="외국어" onClick={() => setSearchKeyword('외국어')} />
-          </div>
-        </div>
-      </div>
+          {/* Box 3 (Right-Middle, Col-3) - Stacked White Cards */}
+          <div className="md:col-span-3 flex flex-col gap-6">
+            <div 
+              onClick={() => handleNav('/community')}
+              className="flex-1 bg-white rounded-[32px] border border-gray-100 p-7 cursor-pointer group shadow-sm hover:shadow-md transition-all hover:-translate-y-1 flex flex-col justify-between relative"
+            >
+              <div>
+                <h3 className="text-lg font-black text-slate-800 mb-1">합격 후기 게시판</h3>
+                <div className="flex flex-col gap-1 mt-4">
+                  <span className="text-xs text-gray-500 font-medium flex items-center hover:text-[#3478B8]">선배들의 공부법 <ArrowRight size={10} className="ml-1"/></span>
+                  <span className="text-xs text-gray-500 font-medium flex items-center hover:text-[#3478B8]">생생한 합격수기 <ArrowRight size={10} className="ml-1"/></span>
+                </div>
+              </div>
+              <MessageSquare className="absolute bottom-6 right-6 w-10 h-10 text-gray-100 group-hover:text-[#3478B8] transition-colors" strokeWidth={1.5} />
+            </div>
 
-      {/* 하단 퀵 메뉴 영역 */}
-      <div className="relative z-10 w-full border-t border-white/20 bg-black/40 backdrop-blur-md">
-        <div className="max-w-screen-2xl mx-auto px-6 sm:px-12 lg:px-20 py-5">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <BottomMenuBox title="CBT 모의고사" link="/study" />
-            <BottomMenuBox title="시험 일정 달력" link="/calendar" />
-            <BottomMenuBox title="합격 후기 게시판" link="/community" />
-            <BottomMenuBox title="내 학습 진도" link="/profile" />
+            <div 
+              onClick={() => handleNav('/recommend')}
+              className="flex-1 bg-white rounded-[32px] border border-gray-100 p-7 cursor-pointer group shadow-sm hover:shadow-md transition-all hover:-translate-y-1 flex flex-col justify-between relative"
+            >
+              <div>
+                <h3 className="text-lg font-black text-slate-800 mb-1">추천 자격증 종목</h3>
+                <div className="flex flex-col gap-1 mt-4">
+                  <span className="text-xs text-gray-500 font-medium flex items-center hover:text-[#3BAA7D]">IT 자격증 정보 <ArrowRight size={10} className="ml-1"/></span>
+                  <span className="text-xs text-gray-500 font-medium flex items-center hover:text-[#3BAA7D]">국가공인 자격증 <ArrowRight size={10} className="ml-1"/></span>
+                </div>
+              </div>
+              <Info className="absolute bottom-6 right-6 w-10 h-10 text-gray-100 group-hover:text-[#3BAA7D] transition-colors" strokeWidth={1.5} />
+            </div>
           </div>
+
+          {/* Box 4 (Right-most, Col-2) - Notice / Ranking List */}
+          <div className="md:col-span-2 bg-white rounded-[32px] border border-gray-100 p-6 shadow-sm flex flex-col">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-base font-black text-slate-800">인기 자격증</h3>
+              <span className="text-gray-400 cursor-pointer hover:text-slate-800">+</span>
+            </div>
+            <div className="flex flex-col gap-5 mt-2">
+              {[
+                { name: '정보처리기사', isNew: true },
+                { name: 'SQL 개발자 (SQLD)', isNew: true },
+                { name: '데이터분석 (ADsP)', isNew: false },
+                { name: '리눅스마스터 1급', isNew: false },
+                { name: '네트워크관리사', isNew: false }
+              ].map((item, idx) => (
+                <div key={idx} className="flex justify-between items-center cursor-pointer group">
+                  <span className="text-xs font-bold text-gray-600 group-hover:text-[#3478B8] truncate pr-2">
+                    {idx + 1}. {item.name}
+                  </span>
+                  {item.isNew && <span className="w-4 h-4 bg-green-100 text-green-600 rounded-full text-[8px] font-black flex items-center justify-center flex-shrink-0">N</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
+
+        {/* Bottom Horizontal Quick Links */}
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm px-8 py-6 flex flex-wrap justify-center sm:justify-between items-center gap-6">
+          <QuickLink icon={<Calendar />} label="시험일정" onClick={() => handleNav('/calendar')} />
+          <QuickLink icon={<BookOpen />} label="모의고사" onClick={() => handleNav('/study')} />
+          <QuickLink icon={<Target />} label="학습진도" onClick={() => handleNav('/profile')} />
+          <QuickLink icon={<MessageSquare />} label="합격후기" onClick={() => handleNav('/community')} />
+          <QuickLink icon={<Info />} label="자료실" onClick={() => {}} />
+          <QuickLink icon={<Phone />} label="고객지원" onClick={() => {}} />
+        </div>
+
       </div>
     </div>
   )
 }
 
-/* --- 하위 UI 컴포넌트들 --- */
-
-const CategoryPill = ({ text, active, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`px-6 py-2 rounded-full font-semibold text-sm transition-all duration-300 ${
-      active
-        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 border border-blue-600'
-        : 'bg-black/30 text-white border border-white/40 hover:bg-white/20'
-    }`}
-  >
-    {text}
-  </button>
+const QuickLink = ({ icon, label, onClick }) => (
+  <div onClick={onClick} className="flex flex-col items-center gap-3 cursor-pointer group min-w-[70px]">
+    <div className="text-gray-400 group-hover:text-[#3478B8] transition-colors">
+      {icon}
+    </div>
+    <span className="text-[11px] font-black text-slate-600 group-hover:text-[#3478B8] transition-colors">{label}</span>
+  </div>
 )
-
-// 버튼을 클릭할 때마다 로그인 여부를 검사하는 문지기 로직
-const BottomMenuBox = ({ title, link }) => {
-  const navigate = useNavigate()
-
-  const handleClick = (e) => {
-    e.preventDefault()
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'
-
-    if (!isLoggedIn) {
-      alert('로그인이 필요한 서비스입니다. 로그인 화면으로 이동합니다.')
-      navigate('/login')
-    } else {
-      navigate(link) // 로그인된 사람만 통과!
-    }
-  }
-
-  return (
-    <button
-      onClick={handleClick}
-      className="group flex w-full items-center justify-center h-14 px-4 rounded-lg border border-white/20 bg-white/5 hover:bg-white text-white hover:text-slate-900 transition-all duration-300"
-    >
-      <span className="font-semibold text-sm md:text-base tracking-wide text-center break-keep">
-        {title}
-      </span>
-    </button>
-  )
-}
 
 export default HomePage

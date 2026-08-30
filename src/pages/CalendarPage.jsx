@@ -143,7 +143,7 @@ const CalendarPage = () => {
                   const isExam = examsOnDay.length > 0;
                   const isReg = false;
                   return (
-                    <div key={i} className={`h-28 p-2 rounded-2xl border transition group cursor-pointer overflow-y-auto ${
+                    <div key={i} className={`h-28 p-2 rounded-2xl border transition group cursor-pointer ${
                       isExam ? 'bg-[#D9A23A]/5 border-[#D9A23A]/30' :
                       isReg ? 'bg-[#3478B8]/5 border-[#3478B8]/30' :
                       'bg-gray-50 border-transparent hover:border-gray-200'
@@ -152,11 +152,17 @@ const CalendarPage = () => {
                         {day}
                       </span>
                       {isReg && <div className="mt-1 text-[9px] font-black bg-[#3478B8] text-white p-1 rounded-md truncate">접수 시작</div>}
-                      {examsOnDay.map((eObj, idx) => (
-                        <div key={idx} className="mt-1 text-[9px] font-black bg-[#D9A23A] text-white p-1 rounded-md truncate">
-                          {eObj.name.split(' ')[0]} {eObj.examType}
-                        </div>
-                      ))}
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {examsOnDay.map((eObj, idx) => (
+                          <div key={idx} className="relative group/tooltip">
+                            <div className="w-2.5 h-2.5 bg-[#D9A23A] rounded-full shadow-sm hover:scale-125 transition-transform cursor-pointer"></div>
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-gray-900 text-white text-[11px] font-black rounded-lg opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all whitespace-nowrap z-[999] shadow-xl pointer-events-none">
+                              {eObj.name} {eObj.examType || ''}
+                              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )
                 })}
