@@ -56,29 +56,7 @@ function Header() {
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0 flex items-center">
-            {isLoggedIn && (
-              <Link to="/profile" title="내정보" className="mr-3 shrink-0">
-                {profile.profileImage ? (
-                  <img
-                    src={profile.profileImage}
-                    alt="프로필"
-                    referrerPolicy="no-referrer"
-                    className="w-9 h-9 rounded-full object-cover border border-slate-200 hover:ring-2 hover:ring-blue-400 transition"
-                  />
-                ) : (
-                  <span className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 font-black flex items-center justify-center border border-slate-200">
-                    {(profile.name || 'U').charAt(0)}
-                  </span>
-                )}
-              </Link>
-            )}
-            <Link to="/" className="flex items-center gap-2">
-              <span className="text-blue-600 text-2xl">📘</span>
-              <span className="text-xl font-extrabold text-blue-600 tracking-tighter">
-                CertiMate
-              </span>
-            </Link>
-            <div className="hidden sm:flex items-center ml-6 gap-1">
+            <div className="hidden sm:flex items-center gap-1">
               <Link to="/study" className="text-sm font-medium text-slate-600 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-50 transition">모의고사</Link>
               <Link to="/exam-locations" className="text-sm font-medium text-slate-600 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-50 transition">시험장 찾기</Link>
             </div>
@@ -87,10 +65,6 @@ function Header() {
           <div className="flex items-center space-x-3">
             {isLoggedIn ? (
               <div className="flex items-center space-x-4">
-                <Link to="/admin" className="text-xs font-medium text-slate-500 border border-slate-300 rounded-full px-3 py-1.5 hover:bg-slate-50 transition">
-                  ADMIN MODE
-                </Link>
-
                 <span className="text-[12px] text-[#3478B8] font-bold bg-[#3478B8]/10 px-3 py-1.5 rounded-full font-mono flex items-center">
                   <span className="mr-1 text-gray-500">접속시간</span> {elapsedTime}
                 </span>
@@ -103,6 +77,20 @@ function Header() {
                 >
                   로그아웃
                 </button>
+                <Link to="/profile" title="내정보" className="shrink-0">
+                  {profile.profileImage ? (
+                    <img
+                      src={profile.profileImage}
+                      alt="프로필"
+                      referrerPolicy="no-referrer"
+                      className="w-9 h-9 rounded-full object-cover border border-slate-200 hover:ring-2 hover:ring-blue-400 transition"
+                    />
+                  ) : (
+                    <span className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 font-black flex items-center justify-center border border-slate-200">
+                      {(profile.name || 'U').charAt(0)}
+                    </span>
+                  )}
+                </Link>
               </div>
             ) : (
               <>
