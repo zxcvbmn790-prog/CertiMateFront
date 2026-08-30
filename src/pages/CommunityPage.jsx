@@ -404,7 +404,7 @@ const CommunityPage = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 text-sm">
-            {allPosts.map((post) => (
+            {[...allPosts].sort((a, b) => (b.isNotice ? 1 : 0) - (a.isNotice ? 1 : 0)).map((post) => (
               <tr
                 key={post.id}
                 onClick={() => handlePostClick(post)}
