@@ -15,15 +15,11 @@ const KakaoCallbackPage = () => {
 
     const sendKakaoCode = async () => {
       try {
-        const res = await authApi.kakaoLogin(code)
-        console.log(res.data)
-        alert('카카오 로그인에 성공했습니다!')
-
-        // 카카오 로그인 성공 시에도 도장 및 시간 찍기!
+        await authApi.kakaoLogin(code)
+        // 로그인 상태 도장 + 시간
         localStorage.setItem('isLoggedIn', 'true')
         localStorage.setItem('loginTime', new Date().getTime())
-
-        window.location.href = '/' // 홈으로 이동하며 상단바 갱신
+        window.location.href = '/' // 홈으로 이동하며 상단바 갱신 (성공 알림 없이 매끄럽게)
       } catch (error) {
         console.error('카카오 로그인 실패:', error)
         alert('카카오 로그인에 실패했습니다.')
@@ -36,9 +32,10 @@ const KakaoCallbackPage = () => {
     }
   }, [navigate])
 
+  // 대기 페이지 없이 최소 스피너만 (코드 교환은 순식간, 곧 홈으로 리다이렉트)
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#EAECEF]">
-      <h2 className="text-xl font-bold text-gray-600">카카오 로그인 처리 중입니다... 잠시만 기다려주세요. 🚀</h2>
+      <div className="w-8 h-8 border-2 border-gray-300 border-t-[#3478B8] rounded-full animate-spin" />
     </div>
   )
 }
