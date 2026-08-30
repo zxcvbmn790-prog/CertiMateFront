@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PenTool, ChevronRight, Folder, Trophy, Image as ImageIcon, Eye, ThumbsUp, List, Check, X } from 'lucide-react'
+import { communityApi } from '../api/communityApi'
+import { authApi } from '../api/authApi'
 
 const CommunityPage = () => {
   const navigate = useNavigate()
@@ -19,12 +21,41 @@ const CommunityPage = () => {
     { id: '02', title: '🎉 오늘 서류 접수 시작! CertiMate 회원 혜택', icon: <Trophy className="text-blue-500" size={16} /> },
   ]
 
-  // 2. 전체 게시글 동적 State
-  const [allPosts, setAllPosts] = useState([
-    { id: 3, category: '공지사항', title: '📁 [6월 1주차] 취준생 필독! 이번주 합격 스펙&취준 꿀팁 LIST', content: '이번 주 꼭 확인해야 할 합격 스펙과 꿀팁을 정리해 드립니다!\n\n1. 어학 점수 커트라인\n2. 필수 자격증 리스트\n3. 면접 빈출 질문', writer: 'CertiMate', date: '2026.06.05', views: 262, recommendations: 12, scraps: 0, comments: 1, isNotice: true, icon: <Folder className="text-yellow-500" size={16} />, imageUrl: null, replyList: [{ id: 1, writer: '취준파이터', date: '2026.06.05', content: '좋은 정보 감사합니다!' }] },
-    { id: 2, category: '자유게시판', title: '🍽️ 취뽀한 날 당일 저녁 뭐 먹고 싶어? 댓글 달고 치킨 받자!', content: '드디어 취업에 성공한 여러분! 가장 먼저 먹고 싶은 음식은 무엇인가요?\n댓글로 남겨주시면 추첨을 통해 5분께 치킨 기프티콘을 쏩니다!', writer: 'CertiMate', date: '2026.06.04', views: 258, recommendations: 8, scraps: 0, comments: 0, isNotice: true, icon: <ImageIcon className="text-gray-400" size={16} />, imageUrl: null, replyList: [] },
-    { id: 1, category: 'BEST 취준', title: '🏆 [6월 1주차] 취준생이 꼭 봐야할 인턴 공고 스펙 총정리', content: '현재 모집 중인 주요 기업 인턴 공고와 합격자 평균 스펙을 모았습니다. 놓치지 말고 지원하세요!', writer: 'CertiMate', date: '2026.06.04', views: 997, recommendations: 45, scraps: 5, comments: 0, isNotice: true, icon: <Trophy className="text-yellow-500" size={16} />, imageUrl: null, replyList: [] },
-  ])
+  // 상단 고정 공지 (하드코딩, DB 글과 id 충돌 방지 위해 큰 id 사용)
+  const pinnedNotices = [
+    { id: 90003, category: '공지사항', title: '📁 [필독] CertiMate 커뮤니티 이용 안내 & 취준 꿀팁', content: '커뮤니티 이용 규칙과 이번 주 합격 스펙·꿀팁을 정리했습니다.', writer: 'CertiMate', date: '2026.06.05', views: 262, recommendations: 12, scraps: 0, comments: 0, isNotice: true, icon: <Folder className="text-yellow-500" size={16} />, imageUrl: null, replyList: [] },
+    { id: 90002, category: '공지사항', title: '🎉 CertiMate 회원 혜택 안내', content: 'CertiMate 회원을 위한 혜택을 안내합니다.', writer: 'CertiMate', date: '2026.06.04', views: 258, recommendations: 8, scraps: 0, comments: 0, isNotice: true, icon: <Trophy className="text-blue-500" size={16} />, imageUrl: null, replyList: [] },
+  ]
+
+  // 2. 전체 게시글 (백엔드 DB에서 로드)
+  const [allPosts, setAllPosts] = useState([])
+  const [currentUserId, setCurrentUserId] = useState(null)
+
+  // DB 응답 → 프론트 게시글 형태 매핑
+  const mapPost = (p) => ({
+    id: p.id, category: p.category, title: p.title, content: p.content,
+    writer: p.writer || (p.nickname ? `NV_${p.nickname}` : '익명'),
+    date: p.date, views: p.views || 0, recommendations: p.recommendations || 0,
+    scraps: 0, comments: p.comments || 0, isNotice: false,
+    icon: p.imageUrl ? <ImageIcon className="text-[#007BFF]" size={16} /> : null,
+    imageUrl: p.imageUrl || null, replyList: p.replyList || [],
+  })
+
+  const fetchPosts = async () => {
+    try {
+      const data = await communityApi.getPosts()
+      setAllPosts(Array.isArray(data) ? data.map(mapPost) : [])
+    } catch (err) {
+      console.error('커뮤니티 목록 로드 실패:', err)
+    }
+  }
+
+  useEffect(() => {
+    fetchPosts()
+    if (localStorage.getItem('isLoggedIn') === 'true') {
+      authApi.getMe().then((res) => setCurrentUserId(res.data.id)).catch(() => {})
+    }
+  }, [])
 
   // 3. 상태 관리
   const [selectedPost, setSelectedPost] = useState(null) // 상세 화면 제어
@@ -58,45 +89,31 @@ const CommunityPage = () => {
     }
   }
 
-  // 게시물 작성(등록) 함수
-  const handleCreatePost = (e) => {
+  // 게시물 작성(등록) 함수 — 백엔드에 실제 저장
+  const handleCreatePost = async (e) => {
     e.preventDefault()
     if (!formData.title.trim() || !formData.content.trim()) {
       alert('제목과 내용을 모두 입력해 주세요!')
       return
     }
-    const today = new Date()
-    const formattedDate = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`
+    try {
+      const fd = new FormData()
+      fd.append('title', formData.title)
+      fd.append('category', formData.category)
+      fd.append('content', formData.content)
+      if (currentUserId) fd.append('userId', currentUserId)
+      if (attachedImage) fd.append('image', attachedImage)
 
-    // 첨부된 이미지가 있다면 브라우저용 임시 URL 생성
-    let newImageUrl = null
-    if (attachedImage) {
-      newImageUrl = URL.createObjectURL(attachedImage)
+      await communityApi.createPost(fd)
+      await fetchPosts() // DB에서 다시 불러와 새 글 반영
+
+      setFormData({ title: '', category: '자유게시판', content: '' })
+      setAttachedImage(null)
+      setIsWriting(false)
+    } catch (err) {
+      console.error('글 등록 실패:', err)
+      alert('글 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.')
     }
-
-    const newPostObj = {
-      id: allPosts.length + 1,
-      category: formData.category,
-      title: formData.title,
-      content: formData.content,
-      writer: 'NV_51630***', // 예시와 동일한 고정 별명
-      date: formattedDate,
-      views: 0,
-      recommendations: 0,
-      scraps: 0,
-      comments: 0,
-      isNotice: false,
-      icon: attachedImage ? <ImageIcon className="text-[#007BFF]" size={16} /> : null, // 이미지가 있으면 리스트에 파란색 아이콘 표시
-      imageUrl: newImageUrl, // 생성된 이미지 URL 저장
-      replyList: []
-    }
-
-    setAllPosts([newPostObj, ...allPosts])
-
-    // 상태 초기화 후 목록으로 이동
-    setFormData({ title: '', category: '자유게시판', content: '' })
-    setAttachedImage(null)
-    setIsWriting(false)
   }
 
   // 게시글 클릭 시 상세 화면으로 이동
@@ -404,7 +421,7 @@ const CommunityPage = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 text-sm">
-            {[...allPosts].sort((a, b) => (b.isNotice ? 1 : 0) - (a.isNotice ? 1 : 0)).map((post) => (
+            {[...pinnedNotices, ...allPosts].map((post) => (
               <tr
                 key={post.id}
                 onClick={() => handlePostClick(post)}
