@@ -436,9 +436,7 @@ const StudyPage = () => {
                     </span>
                   )}
                 </div>
-                <h3 className="text-2xl md:text-3xl font-black leading-snug text-[#4A4F58] break-keep">
-                  {q.question}
-                </h3>
+                <QuestionBody text={q.question} />
               </div>
 
               <div className="space-y-4 flex-1">
@@ -607,6 +605,45 @@ const StudyPage = () => {
         </div>
       </div>
     </div>
+  )
+}
+
+// ==========================================
+// 문제 본문 — ``` 코드펜스를 코딩창으로 렌더링
+// ==========================================
+// 코드가 들어가는 문항은 question 안에 마크다운식 펜스로 저장한다.
+//   다음 코드의 출력 결과는?
+//   ```c
+//   int a = 5;
+//   ```
+// 펜스로 잘라 홀수 조각만 코드로 본다. 펜스가 없는 기존 문항은
+// 조각이 하나뿐이라 지금까지와 똑같이 나온다 — DB 마이그레이션이 필요 없다.
+const QuestionBody = ({ text }) => {
+  const parts = String(text ?? '').split(/```[a-zA-Z0-9+#]*\n?/)
+
+  return (
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <pre
+            key={i}
+            className="my-5 p-5 rounded-[20px] bg-[#2C313A] text-[#E6E8EB] text-[13px] md:text-sm leading-relaxed font-mono overflow-x-auto whitespace-pre"
+          >
+            {/* 들여쓰기가 의미를 갖는 문항이 있으므로 공백을 보존한다 */}
+            <code>{part.replace(/\n+$/, '')}</code>
+          </pre>
+        ) : (
+          part.trim() && (
+            <h3
+              key={i}
+              className="text-2xl md:text-3xl font-black leading-snug text-[#4A4F58] break-keep"
+            >
+              {part.trim()}
+            </h3>
+          )
+        )
+      )}
+    </>
   )
 }
 
