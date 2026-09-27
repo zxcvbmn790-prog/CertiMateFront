@@ -6,6 +6,8 @@ import {
 } from 'lucide-react'
 import { examApi } from '../api/examApi'
 import { authApi } from '../api/authApi'
+// 채점 비교는 반드시 이 함수 하나만 쓴다 (점수 계산·OMR·정답 배지·오답노트 저장 공통).
+import { isCorrectAnswer } from '../utils/grading'
 
 const StudyPage = () => {
   const location = useLocation()
@@ -114,7 +116,7 @@ const StudyPage = () => {
       const s = qq.subjectNum ?? 0
       if (!bySubject[s]) bySubject[s] = { total: 0, correct: 0 }
       bySubject[s].total += 1
-      if (String(userAnswers[qq.learnId]) === String(qq.answer)) bySubject[s].correct += 1
+      if (isCorrectAnswer(qq, userAnswers[qq.learnId])) bySubject[s].correct += 1
     })
     const subjects = Object.keys(bySubject)
       .map(Number)
@@ -201,19 +203,10 @@ const StudyPage = () => {
 
     const historyPayload = questions.map(q => {
       const uAnswer = userAnswers[q.learnId]
-      let isCorrect = false
-      if (uAnswer) {
-        if (Array.isArray(q.answer)) {
-          isCorrect = JSON.stringify(q.answer) === JSON.stringify(uAnswer)
-        } else {
-          const uAnswerText = q.optionsArray[parseInt(uAnswer) - 1]
-          isCorrect = String(q.answer) === String(uAnswerText) || String(q.answer) === String(uAnswer)
-        }
-      }
       return {
         learnId: q.learnId,
         userAnswer: uAnswer || '',
-        isCorrect: isCorrect
+        isCorrect: isCorrectAnswer(q, uAnswer)
       }
     })
 
@@ -377,7 +370,7 @@ const StudyPage = () => {
     const isAnswered = !!userAnswers[question.learnId]
     const isCurrent = currentIndex === idx
     if (isGraded) {
-      const isCorrect = String(userAnswers[question.learnId]) === String(question.answer)
+      const isCorrect = isCorrectAnswer(question, userAnswers[question.learnId])
       if (isCorrect) return 'bg-[#3BAA7D]/10 border-[#3BAA7D]/30 text-[#3BAA7D]'
       if (isAnswered) return 'bg-[#E61E2B]/10 border-[#E61E2B]/30 text-[#E61E2B]'
       return 'bg-gray-100 border-transparent text-gray-300'
@@ -431,14 +424,12 @@ const StudyPage = () => {
                   </div>
                   {isGraded && (
                     <span className={`text-[12px] font-black px-4 py-2 rounded-full tracking-widest uppercase
-                      ${(String(q.answer) === String(q.optionsArray[parseInt(userAnswers[q.learnId]) - 1]) || String(q.answer) === String(userAnswers[q.learnId])) ? 'bg-[#3BAA7D]/10 text-[#3BAA7D]' : 'bg-[#E61E2B]/10 text-[#E61E2B]'}`}>
-                      {(String(q.answer) === String(q.optionsArray[parseInt(userAnswers[q.learnId]) - 1]) || String(q.answer) === String(userAnswers[q.learnId])) ? 'Correct' : 'Incorrect'}
+                      ${isCorrectAnswer(q, userAnswers[q.learnId]) ? 'bg-[#3BAA7D]/10 text-[#3BAA7D]' : 'bg-[#E61E2B]/10 text-[#E61E2B]'}`}>
+                      {isCorrectAnswer(q, userAnswers[q.learnId]) ? 'Correct' : 'Incorrect'}
                     </span>
                   )}
                 </div>
-                <h3 className="text-2xl md:text-3xl font-black leading-snug text-[#4A4F58] break-keep">
-                  {q.question}
-                </h3>
+                <QuestionBody text={q.question} />
               </div>
 
               <div className="space-y-4 flex-1">
@@ -447,7 +438,7 @@ const StudyPage = () => {
                     key={optIdx}
                     text={`${optIdx + 1}. ${opt}`}
                     isSelected={userAnswers[q.learnId] === String(optIdx + 1)}
-                    isActualAnswer={String(q.answer) === String(opt) || String(q.answer) === String(optIdx + 1)}
+                    isActualAnswer={String(opt) === String(q.answer)}
                     isGraded={isGraded}
                     onClick={() => handleSelectAnswer(q.learnId, String(optIdx + 1))}
                   />
@@ -607,6 +598,45 @@ const StudyPage = () => {
         </div>
       </div>
     </div>
+  )
+}
+
+// ==========================================
+// 문제 본문 — ``` 코드펜스를 코딩창으로 렌더링
+// ==========================================
+// 코드가 들어가는 문항은 question 안에 마크다운식 펜스로 저장한다.
+//   다음 코드의 출력 결과는?
+//   ```c
+//   int a = 5;
+//   ```
+// 펜스로 잘라 홀수 조각만 코드로 본다. 펜스가 없는 기존 문항은
+// 조각이 하나뿐이라 지금까지와 똑같이 나온다 — DB 마이그레이션이 필요 없다.
+const QuestionBody = ({ text }) => {
+  const parts = String(text ?? '').split(/```[a-zA-Z0-9+#]*\n?/)
+
+  return (
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <pre
+            key={i}
+            className="my-5 p-5 rounded-[20px] bg-[#2C313A] text-[#E6E8EB] text-[13px] md:text-sm leading-relaxed font-mono overflow-x-auto whitespace-pre"
+          >
+            {/* 들여쓰기가 의미를 갖는 문항이 있으므로 공백을 보존한다 */}
+            <code>{part.replace(/\n+$/, '')}</code>
+          </pre>
+        ) : (
+          part.trim() && (
+            <h3
+              key={i}
+              className="text-2xl md:text-3xl font-black leading-snug text-[#4A4F58] break-keep"
+            >
+              {part.trim()}
+            </h3>
+          )
+        )
+      )}
+    </>
   )
 }
 

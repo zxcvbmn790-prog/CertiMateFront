@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, Calendar, MessageSquare, User, Info, Phone, ArrowRight, Target } from 'lucide-react'
+import { BookOpen, Calendar, MessageSquare, User, Info, Phone, ArrowRight, Target, FileText } from 'lucide-react'
 
 const HomePage = () => {
   const navigate = useNavigate()
@@ -145,6 +145,7 @@ const HomePage = () => {
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm px-8 py-6 flex flex-wrap justify-center sm:justify-between items-center gap-6">
           <QuickLink icon={<Calendar />} label="시험일정" onClick={() => handleNav('/calendar')} />
           <QuickLink icon={<BookOpen />} label="모의고사" onClick={() => handleNav('/study')} />
+          <QuickLink icon={<FileText />} label="자소서" onClick={() => handleNav('/cover-letter')} />
           <QuickLink icon={<Target />} label="학습진도" onClick={() => handleNav('/profile')} />
           <QuickLink icon={<MessageSquare />} label="합격후기" onClick={() => handleNav('/community')} />
           <QuickLink icon={<Info />} label="자료실" onClick={() => {}} />

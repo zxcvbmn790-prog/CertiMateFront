@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { PenTool, Folder, Trophy, Image as ImageIcon, Eye, ThumbsUp, List, Check, X, Edit3, Trash2 } from 'lucide-react'
+import { PenTool, ChevronRight, Folder, Trophy, Image as ImageIcon, Eye, ThumbsUp, List, Check, X, Edit3, Trash2 } from 'lucide-react'
 import { communityApi } from '../api/communityApi'
 import { authApi } from '../api/authApi'
 
@@ -23,12 +23,19 @@ const CommunityPage = () => {
     { id: '02', title: '🎉 오늘 서류 접수 시작! CertiMate 회원 혜택', icon: <Trophy className="text-blue-500" size={16} /> },
   ]
 
+  // 상단 고정 공지 (하드코딩, DB 글과 id 충돌 방지 위해 큰 id 사용)
+  const pinnedNotices = [
+    { id: 90003, category: '공지사항', title: '📁 [필독] CertiMate 커뮤니티 이용 안내 & 취준 꿀팁', content: '커뮤니티 이용 규칙과 이번 주 합격 스펙·꿀팁을 정리했습니다.', writer: 'CertiMate', date: '2026.06.05', views: 262, recommendations: 12, scraps: 0, comments: 0, isNotice: true, icon: <Folder className="text-yellow-500" size={16} />, imageUrl: null, replyList: [] },
+    { id: 90002, category: '공지사항', title: '🎉 CertiMate 회원 혜택 안내', content: 'CertiMate 회원을 위한 혜택을 안내합니다.', writer: 'CertiMate', date: '2026.06.04', views: 258, recommendations: 8, scraps: 0, comments: 0, isNotice: true, icon: <Trophy className="text-blue-500" size={16} />, imageUrl: null, replyList: [] },
+  ]
+
   // 게시글 State
   const [allPosts, setAllPosts] = useState([])
   const [bestPosts, setBestPosts] = useState([])
   const [bestSort, setBestSort] = useState('views') // 'views' (조회순) | 'recommendations' (추천순)
   const [currentUser, setCurrentUser] = useState(null)
   const [loading, setLoading] = useState(false)
+
 
   // 상세/글쓰기/수정 화면 제어 State
   const [selectedPost, setSelectedPost] = useState(null)
@@ -311,38 +318,15 @@ const CommunityPage = () => {
         data.append('image', attachedImage)
       }
 
-      let createdPost = null
-      try {
-        createdPost = await communityApi.createPost(data)
-      } catch (apiErr) {
-        console.warn('서버 등록 실패, 로컬 상태 동기화로 대체:', apiErr)
-      }
-
+      await communityApi.createPost(data)
       alert('게시글이 등록되었습니다!')
-
-      const newPostObj = createdPost || {
-        id: Date.now(),
-        category: formData.category,
-        title: formData.title,
-        content: formData.content,
-        writer: currentUser?.name || '익명',
-        userId: currentUser?.id || null,
-        date: new Date().toISOString().slice(0, 10).replace(/-/g, '.'),
-        views: 0,
-        recommendations: 0,
-        comments: 0,
-        imageUrl: attachedImage ? URL.createObjectURL(attachedImage) : null,
-        isMine: true,
-        replyList: []
-      }
 
       // 상태 초기화 후 목록 새로고침
       setFormData({ title: '', category: '자유게시판', content: '' })
       setAttachedImage(null)
       setIsWriting(false)
-      setAllPosts(prev => [newPostObj, ...prev.filter(p => p.id !== newPostObj.id)])
-      fetchPosts()
-      fetchBestPosts()
+      await fetchPosts()
+      await fetchBestPosts()
     } catch (err) {
       console.error('게시글 등록 실패:', err)
       alert('게시글 등록에 실패했습니다: ' + (err?.response?.data || err.message))
@@ -380,13 +364,22 @@ const CommunityPage = () => {
 
   // 게시글 클릭 시 상세 화면 조회
   const handlePostClick = async (post) => {
+    // 브라우저 뒤로가기가 홈이 아니라 목록으로 돌아오도록 히스토리 항목 추가
+    window.history.pushState({ communityDetail: true }, '')
+    // 공지(하드코딩)는 DB에 없으므로 로컬로만 표시
+    if (post.isNotice) {
+      setSelectedPost(post)
+      return
+    }
     const storedLiked = getLikedListFromStorage().includes(post.id)
     try {
       const detail = await communityApi.getPostDetail(post.id, currentUser?.id)
       const serverLiked = detail?.isLiked !== undefined ? detail.isLiked : (detail?.liked !== undefined ? detail.liked : null)
       const isLiked = serverLiked !== null ? serverLiked : storedLiked
       saveLikedToStorage(post.id, isLiked)
-      setSelectedPost({ ...post, ...detail, isLiked })
+      const fullPost = { ...post, ...detail, isLiked }
+      setSelectedPost(fullPost)
+      setAllPosts(prev => prev.map(p => p.id === post.id ? { ...p, views: fullPost.views || (p.views || 0) + 1 } : p))
     } catch (err) {
       console.error('게시글 상세 조회 실패 (로컬 데이터로 대체):', err)
       const updatedPost = { ...post, views: (post.views || 0) + 1, isLiked: storedLiked }
@@ -394,10 +387,13 @@ const CommunityPage = () => {
     }
   }
 
-  // 상세 화면에서 뒤로 가기
+  // 상세 화면에서 뒤로 가기 (인페이지 버튼 → 브라우저 back과 동일 경로)
   const handleGoBack = () => {
     setSelectedPost(null)
     setIsEditing(false)
+    if (window.history.state?.communityDetail) {
+      window.history.back()
+    }
   }
 
   // 게시글 좋아요(추천) 함수 - 중복 방지, 1인 1회 토글, 알림창 없이 실행
@@ -443,6 +439,13 @@ const CommunityPage = () => {
       // 알림창(alert) 없이 실행 유지
     }
   }
+
+  // 브라우저 뒤로가기 → 상세 닫고 목록으로
+  useEffect(() => {
+    const onPop = () => setSelectedPost(null)
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
 
   // 댓글 등록 함수
   const handleAddComment = async () => {
@@ -1122,7 +1125,7 @@ const CommunityPage = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 text-sm">
-            {allPosts.map((post) => (
+            {[...pinnedNotices, ...allPosts].map((post) => (
               <tr
                 key={post.id}
                 onClick={() => handlePostClick(post)}
