@@ -75,7 +75,7 @@ const ExamLocationsPage = () => {
           <h1 className="text-3xl md:text-4xl font-black mb-2 flex items-center">
             <MapPin className="mr-2 text-[#3478B8]" size={30} /> 시험장 찾기
           </h1>
-          <p className="text-gray-400 font-medium">가까운 시험장을 찾거나 지역·이름으로 검색하세요.</p>
+          <p className="text-[#717171] font-medium">가까운 시험장을 찾거나 지역·이름으로 검색하세요.</p>
         </div>
 
         {/* 검색 + 내 주변 */}
@@ -85,43 +85,43 @@ const ExamLocationsPage = () => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="지역이나 시험장 이름 검색 (예: 강남, 공단, 대학교)"
-              className="w-full p-4 pl-12 rounded-2xl border border-gray-200 outline-none focus:border-[#3478B8] font-medium bg-white"
+              className="w-full p-4 pl-12 rounded-[12px] border border-[#DDDDDD] outline-none focus:border-[#3478B8] font-medium bg-white"
             />
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#717171]" size={20} />
           </form>
           <button
             onClick={handleSearch}
-            className="px-6 py-4 rounded-2xl bg-[#3478B8] text-white font-black hover:bg-[#2e69a3] transition"
+            className="px-6 py-4 rounded-[12px] bg-[#3478B8] text-white font-black hover:bg-[#2e69a3] transition"
           >
             검색
           </button>
           <button
             onClick={handleNearby}
-            className="px-6 py-4 rounded-2xl bg-[#3BAA7D] text-white font-black hover:bg-[#31926b] transition flex items-center justify-center"
+            className="px-6 py-4 rounded-[12px] bg-[#3BAA7D] text-white font-black hover:bg-[#31926b] transition flex items-center justify-center"
           >
             <Navigation size={18} className="mr-2" /> 내 주변 찾기
           </button>
         </div>
 
-        {error && <div className="mb-4 p-4 rounded-2xl bg-[#E61E2B]/5 border border-[#E61E2B]/20 text-[#E61E2B] text-sm font-bold">{error}</div>}
+        {error && <div className="mb-4 p-4 rounded-[12px] bg-[#E61E2B]/5 border border-[#E61E2B]/20 text-[#E61E2B] text-sm font-bold">{error}</div>}
 
         <div className="grid lg:grid-cols-2 gap-6">
           {/* 지도 */}
           <ExamLocationsMap locations={locations} selectedId={selectedId} />
 
           {/* 목록 */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 max-h-[420px] overflow-y-auto">
+          <div className="bg-white rounded-[12px] border border-[#DDDDDD] border border-[#DDDDDD] p-4 max-h-[420px] overflow-y-auto">
             {loading ? (
-              <div className="h-full flex items-center justify-center text-gray-400">
+              <div className="h-full flex items-center justify-center text-[#717171]">
                 <Loader2 className="animate-spin mr-2" size={20} /> 불러오는 중...
               </div>
             ) : locations.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-gray-300 text-sm font-medium text-center px-4">
+              <div className="h-full flex items-center justify-center text-[#717171] text-sm font-medium text-center px-4">
                 {mode ? '결과가 없습니다.' : '검색하거나 "내 주변 찾기"를 눌러보세요.'}
               </div>
             ) : (
               <>
-                <div className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 px-1">
+                <div className="text-xs font-black text-[#717171] uppercase tracking-widest mb-3 px-1">
                   {mode === 'near' ? '내 주변 가까운 순' : '검색 결과'} · {locations.length}곳
                 </div>
                 <div className="space-y-2">
@@ -129,8 +129,8 @@ const ExamLocationsPage = () => {
                     <button
                       key={loc.id}
                       onClick={() => setSelectedId(loc.id)}
-                      className={`w-full text-left p-4 rounded-xl border transition ${
-                        selectedId === loc.id ? 'border-[#3478B8] bg-[#3478B8]/5' : 'border-gray-100 hover:border-[#3478B8]/40'
+                      className={`w-full text-left p-4 rounded-[8px] border transition ${
+                        selectedId === loc.id ? 'border-[#3478B8] bg-[#3478B8]/5' : 'border-[#DDDDDD] hover:border-[#3478B8]/40'
                       }`}
                     >
                       <div className="flex justify-between items-start gap-2">
@@ -141,7 +141,7 @@ const ExamLocationsPage = () => {
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-400 mt-1">{loc.address}</p>
+                      <p className="text-xs text-[#717171] mt-1">{loc.address}</p>
                     </button>
                   ))}
                 </div>

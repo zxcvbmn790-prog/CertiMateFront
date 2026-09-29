@@ -52,31 +52,31 @@ function Header() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-slate-200">
+    <nav className="sticky top-0 z-50 bg-white border-b border-[#DDDDDD] font-sans">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0 flex items-center">
-            <Link to="/" className="text-xl font-extrabold text-blue-600 tracking-tighter mr-6">
+            <Link to="/" className="text-xl font-extrabold text-[#FF385C] tracking-tighter mr-6">
               CertiMate
             </Link>
             <div className="hidden sm:flex items-center gap-1">
-              <Link to="/study" className="text-sm font-medium text-slate-600 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-50 transition">모의고사</Link>
-              <Link to="/exam-locations" className="text-sm font-medium text-slate-600 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-50 transition">시험장 찾기</Link>
+              <Link to="/study" className="text-sm font-medium text-[#717171] hover:text-[#222222] px-3 py-2 rounded-[8px] hover:bg-[#F7F7F7] transition-colors">모의고사</Link>
+              <Link to="/exam-locations" className="text-sm font-medium text-[#717171] hover:text-[#222222] px-3 py-2 rounded-[8px] hover:bg-[#F7F7F7] transition-colors">시험장 찾기</Link>
             </div>
           </div>
 
           <div className="flex items-center space-x-3">
             {isLoggedIn ? (
               <div className="flex items-center space-x-4">
-                <span className="text-[12px] text-[#3478B8] font-bold bg-[#3478B8]/10 px-3 py-1.5 rounded-full font-mono flex items-center">
-                  <span className="mr-1 text-gray-500">접속시간</span> {elapsedTime}
+                <span className="text-[12px] text-[#222222] font-bold bg-[#F7F7F7] border border-[#DDDDDD] px-3 py-1.5 rounded-[8px] font-mono flex items-center">
+                  <span className="mr-2 text-[#717171] font-medium font-sans">접속시간</span> {elapsedTime}
                 </span>
-                <Link to="/profile" className="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2">
+                <Link to="/profile" className="text-sm font-medium text-[#717171] hover:text-[#222222] px-3 py-2">
                   내정보
                 </Link>
                 <button
                   onClick={() => handleLogout()}
-                  className="text-sm font-semibold bg-gray-100 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="text-sm font-semibold bg-white border border-[#DDDDDD] text-[#222222] px-4 py-2 rounded-[8px] hover:bg-[#F7F7F7] transition-colors"
                 >
                   로그아웃
                 </button>
@@ -86,10 +86,10 @@ function Header() {
                       src={profile.profileImage}
                       alt="프로필"
                       referrerPolicy="no-referrer"
-                      className="w-9 h-9 rounded-full object-cover border border-slate-200 hover:ring-2 hover:ring-blue-400 transition"
+                      className="w-9 h-9 rounded-full object-cover border border-[#DDDDDD] hover:ring-2 hover:ring-[#FF385C] transition"
                     />
                   ) : (
-                    <span className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 font-black flex items-center justify-center border border-slate-200">
+                    <span className="w-9 h-9 rounded-full bg-[#FF385C]/10 text-[#FF385C] font-black flex items-center justify-center border border-[#FF385C]/20">
                       {(profile.name || 'U').charAt(0)}
                     </span>
                   )}
@@ -97,10 +97,10 @@ function Header() {
               </div>
             ) : (
               <>
-                <Link to="/register" className="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2">
+                <Link to="/register" className="text-sm font-medium text-[#717171] hover:text-[#222222] px-3 py-2">
                   회원가입
                 </Link>
-                <Link to="/login" className="text-sm font-semibold bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                <Link to="/login" className="text-sm font-semibold bg-[#FF385C] text-white px-5 py-2.5 rounded-[8px] hover:bg-[#D90B3E] transition-colors">
                   로그인
                 </Link>
               </>

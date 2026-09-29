@@ -20,13 +20,13 @@ const CommunityPage = () => {
   // 공지사항 (고정 데이터)
   const notices = [
     { id: '01', title: '🏆 [6월 1주차] 취준생이 꼭 봐야할 정보 목록', icon: <Trophy className="text-yellow-500" size={16} /> },
-    { id: '02', title: '🎉 오늘 서류 접수 시작! CertiMate 회원 혜택', icon: <Trophy className="text-blue-500" size={16} /> },
+    { id: '02', title: '🎉 오늘 서류 접수 시작! CertiMate 회원 혜택', icon: <Trophy className="text-[#FF385C]" size={16} /> },
   ]
 
   // 상단 고정 공지 (하드코딩, DB 글과 id 충돌 방지 위해 큰 id 사용)
   const pinnedNotices = [
     { id: 90003, category: '공지사항', title: '📁 [필독] CertiMate 커뮤니티 이용 안내 & 취준 꿀팁', content: '커뮤니티 이용 규칙과 이번 주 합격 스펙·꿀팁을 정리했습니다.', writer: 'CertiMate', date: '2026.06.05', views: 262, recommendations: 12, scraps: 0, comments: 0, isNotice: true, icon: <Folder className="text-yellow-500" size={16} />, imageUrl: null, replyList: [] },
-    { id: 90002, category: '공지사항', title: '🎉 CertiMate 회원 혜택 안내', content: 'CertiMate 회원을 위한 혜택을 안내합니다.', writer: 'CertiMate', date: '2026.06.04', views: 258, recommendations: 8, scraps: 0, comments: 0, isNotice: true, icon: <Trophy className="text-blue-500" size={16} />, imageUrl: null, replyList: [] },
+    { id: 90002, category: '공지사항', title: '🎉 CertiMate 회원 혜택 안내', content: 'CertiMate 회원을 위한 혜택을 안내합니다.', writer: 'CertiMate', date: '2026.06.04', views: 258, recommendations: 8, scraps: 0, comments: 0, isNotice: true, icon: <Trophy className="text-[#FF385C]" size={16} />, imageUrl: null, replyList: [] },
   ]
 
   // 게시글 State
@@ -590,15 +590,15 @@ const CommunityPage = () => {
   // ==========================================
   if (isWriting) {
     return (
-      <main className="w-full max-w-5xl mx-auto px-6 py-10 bg-white font-sans text-gray-800 antialiased min-h-screen">
-        <h2 className="text-2xl font-black text-slate-800 mb-8 pb-4 border-b-2 border-black flex items-center">
-          <PenTool className="mr-3 text-[#007BFF]" size={24}/> 새 글 작성
+      <main className="w-full max-w-5xl mx-auto px-6 py-10 bg-white font-sans text-[#222222] antialiased min-h-screen">
+        <h2 className="text-2xl font-black text-[#222222] mb-8 pb-4 border-b-2 border-[#DDDDDD] flex items-center">
+          <PenTool className="mr-3 text-[#FF385C]" size={24}/> 새 글 작성
         </h2>
 
         <form onSubmit={handleCreatePost} className="space-y-6 text-sm">
           {/* 작성자 표시 */}
-          <div className="flex border-b border-gray-100 pb-5">
-            <div className="w-32 font-bold text-slate-800 flex items-center pt-1">
+          <div className="flex border-b border-[#DDDDDD] pb-5">
+            <div className="w-32 font-bold text-[#222222] flex items-center pt-1">
               <span className="text-red-500 mr-1">*</span> 작성자
             </div>
             <div className="flex-1 flex items-center space-x-2">
@@ -607,8 +607,8 @@ const CommunityPage = () => {
           </div>
 
           {/* 분류 (라디오 버튼) */}
-          <div className="flex border-b border-gray-100 pb-5">
-            <div className="w-32 font-bold text-slate-800 flex items-center">
+          <div className="flex border-b border-[#DDDDDD] pb-5">
+            <div className="w-32 font-bold text-[#222222] flex items-center">
               <span className="text-red-500 mr-1">*</span> 분류
             </div>
             <div className="flex-1 flex flex-wrap gap-5 items-center">
@@ -620,9 +620,9 @@ const CommunityPage = () => {
                     value={cat}
                     checked={formData.category === cat}
                     onChange={handleInputChange}
-                    className="mr-2 cursor-pointer w-4 h-4 accent-[#007BFF]"
+                    className="mr-2 cursor-pointer w-4 h-4 accent-[#FF385C]"
                   />
-                  <span className={`group-hover:text-[#007BFF] transition ${formData.category === cat ? 'font-bold text-[#007BFF]' : 'text-gray-600'}`}>
+                  <span className={`group-hover:text-[#FF385C] transition ${formData.category === cat ? 'font-bold text-[#FF385C]' : 'text-[#717171]'}`}>
                     {cat}
                   </span>
                 </label>
@@ -631,8 +631,8 @@ const CommunityPage = () => {
           </div>
 
           {/* 제목 */}
-          <div className="flex border-b border-gray-100 pb-5">
-            <div className="w-32 font-bold text-slate-800 flex items-center">
+          <div className="flex border-b border-[#DDDDDD] pb-5">
+            <div className="w-32 font-bold text-[#222222] flex items-center">
               <span className="text-red-500 mr-1">*</span> 제목
             </div>
             <div className="flex-1">
@@ -642,17 +642,17 @@ const CommunityPage = () => {
                 value={formData.title}
                 onChange={handleInputChange}
                 placeholder="제목을 입력해 주세요"
-                className="w-full border border-gray-300 p-3 outline-none focus:border-[#007BFF] transition rounded-sm"
+                className="w-full border border-[#DDDDDD] p-3 outline-none focus:border-[#FF385C] transition rounded-[8px]"
               />
             </div>
           </div>
 
           {/* 내용 */}
-          <div className="flex border-b border-gray-100 pb-5">
-            <div className="w-32 font-bold text-slate-800 pt-4">
+          <div className="flex border-b border-[#DDDDDD] pb-5">
+            <div className="w-32 font-bold text-[#222222] pt-4">
               <span className="text-red-500 mr-1">*</span> 내용
             </div>
-            <div className="flex-1 border border-black p-1 rounded-sm">
+            <div className="flex-1 border border-[#DDDDDD] p-1 rounded-[8px]">
               <textarea
                 name="content"
                 value={formData.content}
@@ -665,16 +665,16 @@ const CommunityPage = () => {
           </div>
 
           {/* 사진 첨부 영역 */}
-          <div className="flex border-b border-gray-100 pb-5">
-            <div className="w-32 font-bold text-slate-800 flex items-center pt-2">사진 첨부</div>
+          <div className="flex border-b border-[#DDDDDD] pb-5">
+            <div className="w-32 font-bold text-[#222222] flex items-center pt-2">사진 첨부</div>
             <div className="flex-1 flex items-center space-x-3">
-              <label className="cursor-pointer flex items-center justify-center bg-white border border-gray-300 hover:border-[#007BFF] hover:text-[#007BFF] text-gray-600 px-4 py-2 rounded-sm transition font-bold text-sm">
+              <label className="cursor-pointer flex items-center justify-center bg-white border border-[#DDDDDD] hover:border-[#FF385C] hover:text-[#FF385C] text-[#717171] px-4 py-2 rounded-[8px] transition font-bold text-sm">
                 <ImageIcon size={16} className="mr-2" /> 컴퓨터에서 사진 찾기
                 <input type="file" accept="image/*" className="hidden" onChange={(e) => setAttachedImage(e.target.files[0] || null)} />
               </label>
               {attachedImage && (
-                <span className="text-[#007BFF] font-medium text-sm flex items-center">
-                  <span className="w-2 h-2 rounded-full bg-[#007BFF] mr-2"></span>
+                <span className="text-[#FF385C] font-medium text-sm flex items-center">
+                  <span className="w-2 h-2 rounded-full bg-[#FF385C] mr-2"></span>
                   {attachedImage.name} (첨부 완료)
                 </span>
               )}
@@ -683,7 +683,7 @@ const CommunityPage = () => {
 
           {/* 하단 등록 및 취소 버튼 */}
           <div className="flex justify-center space-x-3 pt-8 pb-10">
-            <button type="submit" className="flex items-center px-8 py-3 bg-white text-[#007BFF] font-bold border border-[#007BFF] hover:bg-[#007BFF] hover:text-white transition rounded-sm">
+            <button type="submit" className="flex items-center px-8 py-3 bg-white text-[#FF385C] font-bold border border-[#FF385C] hover:bg-[#FF385C] hover:text-white transition rounded-[8px]">
               <Check size={18} className="mr-2" /> 등록하기
             </button>
             <button
@@ -693,7 +693,7 @@ const CommunityPage = () => {
                 setAttachedImage(null)
                 setFormData({ title: '', category: '자유게시판', content: '' })
               }}
-              className="flex items-center px-8 py-3 bg-white text-gray-500 font-bold border border-gray-300 hover:bg-gray-50 transition rounded-sm"
+              className="flex items-center px-8 py-3 bg-white text-[#717171] font-bold border border-[#DDDDDD] hover:bg-[#F7F7F7] transition rounded-[8px]"
             >
               <X size={18} className="mr-2" /> 취소
             </button>
@@ -708,15 +708,15 @@ const CommunityPage = () => {
   // ==========================================
   if (isEditing && selectedPost) {
     return (
-      <main className="w-full max-w-5xl mx-auto px-6 py-10 bg-white font-sans text-gray-800 antialiased min-h-screen">
-        <h2 className="text-2xl font-black text-slate-800 mb-8 pb-4 border-b-2 border-black flex items-center">
-          <Edit3 className="mr-3 text-[#007BFF]" size={24}/> 게시글 수정
+      <main className="w-full max-w-5xl mx-auto px-6 py-10 bg-white font-sans text-[#222222] antialiased min-h-screen">
+        <h2 className="text-2xl font-black text-[#222222] mb-8 pb-4 border-b-2 border-[#DDDDDD] flex items-center">
+          <Edit3 className="mr-3 text-[#FF385C]" size={24}/> 게시글 수정
         </h2>
 
         <form onSubmit={handleUpdatePost} className="space-y-6 text-sm">
           {/* 분류 (라디오 버튼) */}
-          <div className="flex border-b border-gray-100 pb-5">
-            <div className="w-32 font-bold text-slate-800 flex items-center">
+          <div className="flex border-b border-[#DDDDDD] pb-5">
+            <div className="w-32 font-bold text-[#222222] flex items-center">
               <span className="text-red-500 mr-1">*</span> 분류
             </div>
             <div className="flex-1 flex flex-wrap gap-5 items-center">
@@ -728,9 +728,9 @@ const CommunityPage = () => {
                     value={cat}
                     checked={editFormData.category === cat}
                     onChange={handleEditInputChange}
-                    className="mr-2 cursor-pointer w-4 h-4 accent-[#007BFF]"
+                    className="mr-2 cursor-pointer w-4 h-4 accent-[#FF385C]"
                   />
-                  <span className={`group-hover:text-[#007BFF] transition ${editFormData.category === cat ? 'font-bold text-[#007BFF]' : 'text-gray-600'}`}>
+                  <span className={`group-hover:text-[#FF385C] transition ${editFormData.category === cat ? 'font-bold text-[#FF385C]' : 'text-[#717171]'}`}>
                     {cat}
                   </span>
                 </label>
@@ -739,8 +739,8 @@ const CommunityPage = () => {
           </div>
 
           {/* 제목 */}
-          <div className="flex border-b border-gray-100 pb-5">
-            <div className="w-32 font-bold text-slate-800 flex items-center">
+          <div className="flex border-b border-[#DDDDDD] pb-5">
+            <div className="w-32 font-bold text-[#222222] flex items-center">
               <span className="text-red-500 mr-1">*</span> 제목
             </div>
             <div className="flex-1">
@@ -749,17 +749,17 @@ const CommunityPage = () => {
                 name="title"
                 value={editFormData.title}
                 onChange={handleEditInputChange}
-                className="w-full border border-gray-300 p-3 outline-none focus:border-[#007BFF] transition rounded-sm"
+                className="w-full border border-[#DDDDDD] p-3 outline-none focus:border-[#FF385C] transition rounded-[8px]"
               />
             </div>
           </div>
 
           {/* 내용 */}
-          <div className="flex border-b border-gray-100 pb-5">
-            <div className="w-32 font-bold text-slate-800 pt-4">
+          <div className="flex border-b border-[#DDDDDD] pb-5">
+            <div className="w-32 font-bold text-[#222222] pt-4">
               <span className="text-red-500 mr-1">*</span> 내용
             </div>
-            <div className="flex-1 border border-black p-1 rounded-sm">
+            <div className="flex-1 border border-[#DDDDDD] p-1 rounded-[8px]">
               <textarea
                 name="content"
                 value={editFormData.content}
@@ -771,18 +771,18 @@ const CommunityPage = () => {
           </div>
 
           {/* 기존 이미지 및 사진 변경 영역 */}
-          <div className="flex border-b border-gray-100 pb-5">
-            <div className="w-32 font-bold text-slate-800 pt-2">첨부 이미지</div>
+          <div className="flex border-b border-[#DDDDDD] pb-5">
+            <div className="w-32 font-bold text-[#222222] pt-2">첨부 이미지</div>
             <div className="flex-1 space-y-4">
               {selectedPost.imageUrl && !removeImage && (
-                <div className="flex items-center space-x-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                <div className="flex items-center space-x-4 bg-[#F7F7F7] p-3 rounded-[8px] border border-[#DDDDDD]">
                   <img
                     src={getFullImageUrl(selectedPost.imageUrl)}
                     alt="현재 첨부 이미지"
                     className="h-16 w-16 object-cover rounded border"
                   />
                   <div className="flex-1">
-                    <p className="text-xs text-gray-500 font-semibold">현재 첨부된 이미지</p>
+                    <p className="text-xs text-[#717171] font-semibold">현재 첨부된 이미지</p>
                     <label className="mt-1 flex items-center text-xs text-red-500 cursor-pointer font-bold">
                       <input
                         type="checkbox"
@@ -802,7 +802,7 @@ const CommunityPage = () => {
                   <button
                     type="button"
                     onClick={() => setRemoveImage(false)}
-                    className="text-gray-500 hover:text-black underline"
+                    className="text-[#717171] hover:text-black underline"
                   >
                     삭제 취소
                   </button>
@@ -810,13 +810,13 @@ const CommunityPage = () => {
               )}
 
               <div className="flex items-center space-x-3">
-                <label className="cursor-pointer flex items-center justify-center bg-white border border-gray-300 hover:border-[#007BFF] hover:text-[#007BFF] text-gray-600 px-4 py-2 rounded-sm transition font-bold text-sm">
+                <label className="cursor-pointer flex items-center justify-center bg-white border border-[#DDDDDD] hover:border-[#FF385C] hover:text-[#FF385C] text-[#717171] px-4 py-2 rounded-[8px] transition font-bold text-sm">
                   <ImageIcon size={16} className="mr-2" /> {selectedPost.imageUrl ? '다른 사진으로 변경' : '컴퓨터에서 사진 찾기'}
                   <input type="file" accept="image/*" className="hidden" onChange={(e) => setEditAttachedImage(e.target.files[0] || null)} />
                 </label>
                 {editAttachedImage && (
-                  <span className="text-[#007BFF] font-medium text-sm flex items-center">
-                    <span className="w-2 h-2 rounded-full bg-[#007BFF] mr-2"></span>
+                  <span className="text-[#FF385C] font-medium text-sm flex items-center">
+                    <span className="w-2 h-2 rounded-full bg-[#FF385C] mr-2"></span>
                     {editAttachedImage.name} (새 이미지 선택됨)
                   </span>
                 )}
@@ -826,13 +826,13 @@ const CommunityPage = () => {
 
           {/* 하단 수정 완료 및 취소 버튼 */}
           <div className="flex justify-center space-x-3 pt-8 pb-10">
-            <button type="submit" className="flex items-center px-8 py-3 bg-[#007BFF] text-white font-bold hover:bg-[#0069D9] transition rounded-sm shadow">
+            <button type="submit" className="flex items-center px-8 py-3 bg-[#FF385C] text-white font-bold hover:bg-[#FF385C] transition rounded-[8px]">
               <Check size={18} className="mr-2" /> 수정 완료
             </button>
             <button
               type="button"
               onClick={() => setIsEditing(false)}
-              className="flex items-center px-8 py-3 bg-white text-gray-500 font-bold border border-gray-300 hover:bg-gray-50 transition rounded-sm"
+              className="flex items-center px-8 py-3 bg-white text-[#717171] font-bold border border-[#DDDDDD] hover:bg-[#F7F7F7] transition rounded-[8px]"
             >
               <X size={18} className="mr-2" /> 취소
             </button>
@@ -847,10 +847,10 @@ const CommunityPage = () => {
   // ==========================================
   if (selectedPost) {
     return (
-      <main className="w-full max-w-5xl mx-auto px-6 py-10 bg-white font-sans text-gray-800 antialiased min-h-screen">
+      <main className="w-full max-w-5xl mx-auto px-6 py-10 bg-white font-sans text-[#222222] antialiased min-h-screen">
         <div className="mb-6">
           <div className="flex items-center space-x-2 mb-2">
-            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-50 text-[#007BFF] border border-blue-100">
+            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#FF385C]/10 text-[#FF385C] border border-[#DDDDDD]">
               {selectedPost.category || '자유게시판'}
             </span>
             {isMyPost && (
@@ -861,20 +861,20 @@ const CommunityPage = () => {
           </div>
 
           <div className="flex justify-between items-start">
-            <h2 className="text-3xl font-black text-slate-800 mb-4">{selectedPost.title}</h2>
+            <h2 className="text-3xl font-black text-[#222222] mb-4">{selectedPost.title}</h2>
 
             {/* 내가 쓴 글일 때만 노출되는 [수정], [삭제] 버튼 */}
             {isMyPost && (
               <div className="flex items-center space-x-2 shrink-0 ml-4">
                 <button
                   onClick={handleStartEdit}
-                  className="flex items-center px-3.5 py-1.5 border border-blue-200 bg-blue-50 text-[#007BFF] rounded-lg text-xs font-bold hover:bg-blue-100 transition shadow-xs cursor-pointer"
+                  className="flex items-center px-3.5 py-1.5 border border-[#DDDDDD] bg-[#FF385C]/10 text-[#FF385C] rounded-[8px] text-xs font-bold hover:bg-[#FF385C]/20 transition cursor-pointer"
                 >
                   <Edit3 size={14} className="mr-1" /> 수정
                 </button>
                 <button
                   onClick={handleDeletePost}
-                  className="flex items-center px-3.5 py-1.5 border border-red-200 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition shadow-xs cursor-pointer"
+                  className="flex items-center px-3.5 py-1.5 border border-red-200 bg-red-50 text-red-600 rounded-[8px] text-xs font-bold hover:bg-red-100 transition cursor-pointer"
                 >
                   <Trash2 size={14} className="mr-1" /> 삭제
                 </button>
@@ -882,22 +882,22 @@ const CommunityPage = () => {
             )}
           </div>
 
-          <div className="flex justify-between items-center text-sm border-b border-gray-200 pb-4">
+          <div className="flex justify-between items-center text-sm border-b border-[#DDDDDD] pb-4">
             <div className="flex items-center space-x-3">
-              <span className="font-bold text-[#007BFF]">{selectedPost.writer}</span>
-              <span className="text-gray-400">{selectedPost.date}</span>
+              <span className="font-bold text-[#FF385C]">{selectedPost.writer}</span>
+              <span className="text-[#717171]">{selectedPost.date}</span>
             </div>
-            <div className="flex items-center space-x-4 text-gray-500">
+            <div className="flex items-center space-x-4 text-[#717171]">
               <span className="flex items-center"><Eye size={16} className="mr-1" /> {selectedPost.views || 0}</span>
               <span className="flex items-center">
-                <ThumbsUp size={16} className={`mr-1 transition-colors ${selectedPost.isLiked ? 'text-[#007BFF] fill-[#007BFF]' : ''}`} />
+                <ThumbsUp size={16} className={`mr-1 transition-colors ${selectedPost.isLiked ? 'text-[#FF385C] fill-[#FF385C]' : ''}`} />
                 {selectedPost.recommendations || 0}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="min-h-[300px] text-slate-700 leading-relaxed whitespace-pre-wrap py-6 text-lg">
+        <div className="min-h-[300px] text-[#222222] leading-relaxed whitespace-pre-wrap py-6 text-lg">
           {selectedPost.content}
 
           {selectedPost.imageUrl && (
@@ -905,27 +905,27 @@ const CommunityPage = () => {
               <img
                 src={getFullImageUrl(selectedPost.imageUrl)}
                 alt="첨부 이미지"
-                className="max-w-full rounded-xl border border-gray-200 shadow-sm"
+                className="max-w-full rounded-[12px] border border-[#DDDDDD]"
               />
             </div>
           )}
         </div>
 
-        <div className="flex justify-between items-center border-t border-gray-200 pt-6 mb-10">
-          <button onClick={handleGoBack} className="flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-50 transition">
+        <div className="flex justify-between items-center border-t border-[#DDDDDD] pt-6 mb-10">
+          <button onClick={handleGoBack} className="flex items-center px-4 py-2 border border-[#DDDDDD] rounded-[8px] text-sm font-bold text-[#717171] hover:bg-[#F7F7F7] transition">
             <List size={16} className="mr-2" /> 목록보기
           </button>
           <button
             onClick={handleRecommend}
-            className={`flex items-center px-4 py-2 border rounded-lg text-sm font-bold transition cursor-pointer ${
+            className={`flex items-center px-4 py-2 border rounded-[8px] text-sm font-bold transition cursor-pointer ${
               selectedPost.isLiked
-                ? 'border-[#007BFF] text-[#007BFF] bg-blue-50/40 shadow-xs'
-                : 'border-gray-300 text-gray-600 hover:text-[#007BFF] hover:border-[#007BFF] bg-white'
+                ? 'border-[#FF385C] text-[#FF385C] bg-[#FF385C]/10'
+                : 'border-[#DDDDDD] text-[#717171] hover:text-[#FF385C] hover:border-[#FF385C] bg-white'
             }`}
           >
             <ThumbsUp
               size={16}
-              className={`mr-2 transition-colors ${selectedPost.isLiked ? 'text-[#007BFF] fill-[#007BFF]' : ''}`}
+              className={`mr-2 transition-colors ${selectedPost.isLiked ? 'text-[#FF385C] fill-[#FF385C]' : ''}`}
             />
             좋아요 ({selectedPost.recommendations || 0})
           </button>
@@ -933,25 +933,25 @@ const CommunityPage = () => {
 
         {/* 댓글 입력 영역 */}
         <div className="mb-10">
-          <div className="border border-gray-300 rounded-sm flex overflow-hidden">
+          <div className="border border-[#DDDDDD] rounded-[8px] flex overflow-hidden">
             <div className="flex-1 p-4 bg-white">
-              <div className="flex justify-between items-center mb-2 border-b border-gray-100 pb-2">
+              <div className="flex justify-between items-center mb-2 border-b border-[#DDDDDD] pb-2">
                 <div className="flex items-center space-x-2">
-                  <span className="font-bold text-sm text-slate-800">{currentUser?.name || '로그인 사용자'}</span>
+                  <span className="font-bold text-sm text-[#222222]">{currentUser?.name || '로그인 사용자'}</span>
                 </div>
-                <span className="text-xs text-gray-400">{commentInput.length} / 500</span>
+                <span className="text-xs text-[#717171]">{commentInput.length} / 500</span>
               </div>
               <textarea
                 value={commentInput}
                 onChange={(e) => setCommentInput(e.target.value)}
                 placeholder="- 사전 공지 없이 삭제될 수 있는 댓글&#13;&#10;잘못된 정보, 타인의 권리 침해, 욕설, 상업성 광고, 기타 부적절한 내용"
-                className="w-full resize-none outline-none text-sm text-slate-500 min-h-[80px] pt-2"
+                className="w-full resize-none outline-none text-sm text-[#717171] min-h-[80px] pt-2"
                 maxLength={500}
               />
             </div>
             <button
               onClick={handleAddComment}
-              className="w-24 bg-white border-l border-gray-300 text-slate-600 font-bold hover:bg-gray-50 transition text-sm"
+              className="w-24 bg-white border-l border-[#DDDDDD] text-[#222222] font-bold hover:bg-[#F7F7F7] transition text-sm"
             >
               등록
             </button>
@@ -959,33 +959,33 @@ const CommunityPage = () => {
         </div>
 
         {/* 댓글 목록 */}
-        <div className="space-y-6 border-t border-gray-100 pt-6">
-          <h3 className="font-bold text-slate-800 text-base mb-4">
-            댓글 <span className="text-[#007BFF]">{(selectedPost.replyList || []).length}</span>개
+        <div className="space-y-6 border-t border-[#DDDDDD] pt-6">
+          <h3 className="font-bold text-[#222222] text-base mb-4">
+            댓글 <span className="text-[#FF385C]">{(selectedPost.replyList || []).length}</span>개
           </h3>
           {(selectedPost.replyList || []).map((reply) => (
-            <div key={reply.id} className="border-b border-gray-100 pb-6">
+            <div key={reply.id} className="border-b border-[#DDDDDD] pb-6">
               <div className="flex justify-between items-center mb-2">
                 <div className="flex items-center space-x-2">
-                  <span className="font-bold text-sm text-slate-800">{reply.writer}</span>
+                  <span className="font-bold text-sm text-[#222222]">{reply.writer}</span>
                   {reply.writer === selectedPost.writer && (
-                    <span className="text-[10px] text-[#007BFF] border border-[#007BFF] px-1.5 rounded-full font-bold">작성자</span>
+                    <span className="text-[10px] text-[#FF385C] border border-[#FF385C] px-1.5 rounded-full font-bold">작성자</span>
                   )}
                 </div>
-                <span className="text-xs text-gray-400">{reply.date}</span>
+                <span className="text-xs text-[#717171]">{reply.date}</span>
               </div>
-              <p className="text-sm text-slate-700 whitespace-pre-wrap">{reply.content}</p>
+              <p className="text-sm text-[#222222] whitespace-pre-wrap">{reply.content}</p>
 
               {/* 대댓글(children)이 있을 경우 */}
               {reply.children && reply.children.length > 0 && (
-                <div className="mt-4 ml-6 pl-4 border-l-2 border-gray-200 space-y-4">
+                <div className="mt-4 ml-6 pl-4 border-l-2 border-[#DDDDDD] space-y-4">
                   {reply.children.map((child) => (
-                    <div key={child.id} className="bg-gray-50 p-3 rounded">
+                    <div key={child.id} className="bg-[#F7F7F7] p-3 rounded">
                       <div className="flex justify-between items-center mb-1">
-                        <span className="font-bold text-xs text-slate-800">{child.writer}</span>
-                        <span className="text-[11px] text-gray-400">{child.date}</span>
+                        <span className="font-bold text-xs text-[#222222]">{child.writer}</span>
+                        <span className="text-[11px] text-[#717171]">{child.date}</span>
                       </div>
-                      <p className="text-xs text-slate-700 whitespace-pre-wrap">{child.content}</p>
+                      <p className="text-xs text-[#222222] whitespace-pre-wrap">{child.content}</p>
                     </div>
                   ))}
                 </div>
@@ -993,7 +993,7 @@ const CommunityPage = () => {
             </div>
           ))}
           {(!selectedPost.replyList || selectedPost.replyList.length === 0) && (
-            <div className="text-center py-10 text-gray-400 text-sm">
+            <div className="text-center py-10 text-[#717171] text-sm">
               첫 번째 댓글을 남겨주세요!
             </div>
           )}
@@ -1006,32 +1006,32 @@ const CommunityPage = () => {
   // [화면 4] 게시글 목록 페이지 (기본 화면)
   // ==========================================
   return (
-    <main className="w-full max-w-7xl mx-auto px-6 py-10 bg-white font-sans text-gray-800 antialiased flex flex-col relative min-h-screen">
+    <main className="w-full max-w-7xl mx-auto px-6 py-10 bg-white font-sans text-[#222222] antialiased flex flex-col relative min-h-screen">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
         {/* BEST 인기글 박스 */}
-        <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+        <div className="bg-white p-8 rounded-[12px] border border-[#DDDDDD]">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-black text-slate-800">BEST 인기글</h2>
+            <h2 className="text-2xl font-black text-[#222222]">BEST 인기글</h2>
             <div className="flex items-center space-x-2 text-sm">
               <button
                 type="button"
                 onClick={() => handleBestSortChange('views')}
                 className={`transition-colors cursor-pointer font-semibold ${
                   bestSort === 'views'
-                    ? 'text-[#007BFF] font-bold'
-                    : 'text-gray-400 hover:text-slate-800'
+                    ? 'text-[#FF385C] font-bold'
+                    : 'text-[#717171] hover:text-[#222222]'
                 }`}
               >
                 조회순
               </button>
-              <span className="text-gray-300 text-xs">|</span>
+              <span className="text-[#717171] text-xs">|</span>
               <button
                 type="button"
                 onClick={() => handleBestSortChange('recommendations')}
                 className={`transition-colors cursor-pointer font-semibold ${
                   bestSort === 'recommendations'
-                    ? 'text-[#007BFF] font-bold'
-                    : 'text-gray-400 hover:text-slate-800'
+                    ? 'text-[#FF385C] font-bold'
+                    : 'text-[#717171] hover:text-[#222222]'
                 }`}
               >
                 추천순
@@ -1046,22 +1046,22 @@ const CommunityPage = () => {
                 className="flex justify-between items-center group cursor-pointer"
               >
                 <div className="flex items-center space-x-3 overflow-hidden">
-                  <span className="text-lg font-black text-slate-900 w-6 text-center shrink-0">
+                  <span className="text-lg font-black text-[#222222] w-6 text-center shrink-0">
                     {String(idx + 1).padStart(2, '0')}
                   </span>
-                  <p className="text-sm font-semibold text-slate-800 group-hover:text-[#007BFF] transition truncate">
+                  <p className="text-sm font-semibold text-[#222222] group-hover:text-[#FF385C] transition truncate">
                     {post.title}
                   </p>
                 </div>
                 <div className="flex items-center space-x-2 shrink-0 ml-2">
                   {bestSort === 'views' && post.views != null && (
-                    <span className="text-xs text-gray-400 flex items-center font-medium">
+                    <span className="text-xs text-[#717171] flex items-center font-medium">
                       <Eye size={13} className="mr-0.5" />
                       {post.views}
                     </span>
                   )}
                   {bestSort === 'recommendations' && post.recommendations != null && (
-                    <span className="text-xs text-[#007BFF] flex items-center font-medium">
+                    <span className="text-xs text-[#FF385C] flex items-center font-medium">
                       <ThumbsUp size={13} className="mr-0.5" />
                       {post.recommendations}
                     </span>
@@ -1075,7 +1075,7 @@ const CommunityPage = () => {
               </div>
             ))}
             {bestPosts.length === 0 && (
-              <div className="text-center py-6 text-gray-400 text-sm">
+              <div className="text-center py-6 text-[#717171] text-sm">
                 인기글이 없습니다.
               </div>
             )}
@@ -1083,17 +1083,17 @@ const CommunityPage = () => {
         </div>
 
         {/* CertiMate 공지 박스 */}
-        <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+        <div className="bg-white p-8 rounded-[12px] border border-[#DDDDDD]">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-black text-slate-800">CertiMate 공지</h2>
+            <h2 className="text-2xl font-black text-[#222222]">CertiMate 공지</h2>
           </div>
           <div className="space-y-4">
             {notices.map((notice) => (
               <div key={notice.id} className="flex items-center space-x-3 group cursor-pointer">
-                <span className="text-lg font-black text-slate-900 w-6 text-center">{notice.id}</span>
+                <span className="text-lg font-black text-[#222222] w-6 text-center">{notice.id}</span>
                 <div className="flex items-center space-x-1.5 flex-1 overflow-hidden">
                   {notice.icon}
-                  <p className="text-sm font-semibold text-slate-800 group-hover:text-[#007BFF] transition truncate">{notice.title}</p>
+                  <p className="text-sm font-semibold text-[#222222] group-hover:text-[#FF385C] transition truncate">{notice.title}</p>
                 </div>
               </div>
             ))}
@@ -1102,18 +1102,18 @@ const CommunityPage = () => {
       </div>
 
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-black text-slate-800">전체글</h2>
+        <h2 className="text-2xl font-black text-[#222222]">전체글</h2>
         <button
           onClick={handleWriteClick}
-          className="bg-[#007BFF] text-white px-8 py-3 rounded-xl font-semibold flex items-center shadow-lg hover:bg-[#0069D9] transition"
+          className="bg-[#FF385C] text-white px-8 py-3 rounded-[12px] font-semibold flex items-center hover:bg-[#FF385C] transition"
         >
           <PenTool size={18} className="mr-2" /> 글쓰기
         </button>
       </div>
 
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden mb-12">
+      <div className="bg-white rounded-[12px] border border-[#DDDDDD] overflow-hidden mb-12">
         <table className="w-full text-center">
-          <thead className="bg-gray-50 text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
+          <thead className="bg-[#F7F7F7] text-[11px] font-black text-[#717171] uppercase tracking-widest border-b border-[#DDDDDD]">
             <tr>
               <th className="px-6 py-4">번호</th>
               <th className="px-6 py-4">게시판명</th>
@@ -1124,36 +1124,36 @@ const CommunityPage = () => {
               <th className="px-6 py-4">추천</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 text-sm">
+          <tbody className="divide-y divide-[#DDDDDD] text-sm">
             {[...pinnedNotices, ...allPosts].map((post) => (
               <tr
                 key={post.id}
                 onClick={() => handlePostClick(post)}
-                className={`hover:bg-gray-50 transition cursor-pointer group ${post.isNotice ? 'bg-[#F8F9FA] text-[#007BFF] font-black' : 'font-semibold text-slate-800'}`}
+                className={`hover:bg-[#F7F7F7] transition cursor-pointer group ${post.isNotice ? 'bg-[#F8F9FA] text-[#FF385C] font-black' : 'font-semibold text-[#222222]'}`}
               >
-                <td className={`px-6 py-5 text-sm ${post.isNotice ? 'text-[#007BFF]' : 'text-gray-400'}`}>{post.isNotice ? '공지' : post.id}</td>
-                <td className={`px-6 py-5 text-sm ${post.isNotice ? 'text-[#007BFF]' : 'text-gray-400'}`}>{post.category}</td>
+                <td className={`px-6 py-5 text-sm ${post.isNotice ? 'text-[#FF385C]' : 'text-[#717171]'}`}>{post.isNotice ? '공지' : post.id}</td>
+                <td className={`px-6 py-5 text-sm ${post.isNotice ? 'text-[#FF385C]' : 'text-[#717171]'}`}>{post.category}</td>
                 <td className="px-10 py-5 text-left">
                   <div className="flex items-center space-x-1.5 overflow-hidden">
                     {isPostMine(post) && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-[#007BFF] shrink-0">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#FF385C]/20 text-[#FF385C] shrink-0">
                         내 글
                       </span>
                     )}
-                    {post.imageUrl && <ImageIcon size={16} className="text-[#007BFF] shrink-0" />}
-                    <p className={`truncate ${post.isNotice ? 'text-[#007BFF]' : 'text-slate-800'}`}>{post.title}</p>
+                    {post.imageUrl && <ImageIcon size={16} className="text-[#FF385C] shrink-0" />}
+                    <p className={`truncate ${post.isNotice ? 'text-[#FF385C]' : 'text-[#222222]'}`}>{post.title}</p>
                     {post.comments > 0 && <span className="text-[#DC3545] font-semibold text-xs ml-1">({post.comments})</span>}
                   </div>
                 </td>
-                <td className="px-6 py-5 text-gray-500">{post.writer}</td>
-                <td className="px-6 py-5 text-gray-400">{post.date}</td>
-                <td className="px-6 py-5 text-gray-400">{post.views || 0}</td>
-                <td className="px-6 py-5 text-gray-400">{post.recommendations || 0}</td>
+                <td className="px-6 py-5 text-[#717171]">{post.writer}</td>
+                <td className="px-6 py-5 text-[#717171]">{post.date}</td>
+                <td className="px-6 py-5 text-[#717171]">{post.views || 0}</td>
+                <td className="px-6 py-5 text-[#717171]">{post.recommendations || 0}</td>
               </tr>
             ))}
             {allPosts.length === 0 && !loading && (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-gray-400">
+                <td colSpan={7} className="py-12 text-center text-[#717171]">
                   등록된 게시글이 없습니다. 첫 글을 작성해 보세요!
                 </td>
               </tr>
