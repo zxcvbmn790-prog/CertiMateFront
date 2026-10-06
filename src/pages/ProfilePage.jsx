@@ -31,7 +31,7 @@ const ProfilePage = () => {
     totalStudyTime: '0h',
     cbtAccuracy: '0%',
     heatmapData: [],
-    targetExam: null,
+    targetExams: [],
     certStats: [],
     allCertifications: []
   })
@@ -160,9 +160,9 @@ const ProfilePage = () => {
       });
   }
 
-  const handleDeleteSchedule = () => {
-    if (!window.confirm('등록된 시험 일정을 삭제하시겠습니까?')) return;
-    userApi.deleteSchedule()
+  const handleDeleteSchedule = (id) => {
+    if (!window.confirm('등록한 시험 일정을 삭제하시겠습니까?')) return;
+    userApi.deleteSchedule(id)
       .then(() => {
         alert('삭제되었습니다.');
         fetchData();
@@ -338,7 +338,7 @@ const ProfilePage = () => {
           {/* 좌측 메인 영역 (70%) */}
           <div className="lg:col-span-2 space-y-6">
             <section className="bg-white p-8 rounded-[12px] border border-[#DDDDDD] ">
-              <h3 className="text-lg font-black mb-2 flex items-center text-[#222222]"><Activity className="mr-3 text-[#3BAA7D]" size={20} /> 꾸준한 학습의 흔적</h3>
+              <h3 className="text-lg font-black mb-2 flex items-center text-[#222222]">문제 풀이 기록</h3>
               <p className="text-xs text-[#717171] font-bold mb-4">잔디를 클릭하면 해당일의 오답노트와 다시 풀기를 할 수 있습니다.</p>
               {renderHeatmap()}
             </section>
@@ -346,7 +346,7 @@ const ProfilePage = () => {
             {/* 성적 변화 추이 그래프 */}
             <section className="bg-white p-8 rounded-[12px] border border-[#DDDDDD] ">
               <h3 className="text-lg font-black mb-6 flex items-center text-[#222222]">
-                <Activity className="mr-3 text-[#D9A23A]" size={20} /> 성적 변화 추이
+                성적 요약
               </h3>
               {dashboard.certTrends && dashboard.certTrends.length > 0 ? (
                 <CertTrendChart certTrends={dashboard.certTrends} />
@@ -429,27 +429,31 @@ const ProfilePage = () => {
                   + 추가
                 </button>
               </div>
-              {dashboard.targetExam ? (
-                <div className="p-6 bg-[#FF385C]/5 border border-[#FF385C]/20 rounded-[12px] group">
-                  <div className="flex justify-between items-start mb-4 gap-2">
-                    <div className="flex items-center space-x-3 min-w-0 flex-1">
-                      <div className="w-1.5 h-10 bg-[#D9A23A] rounded-[8px] shrink-0"></div>
-                      <div className="text-left min-w-0 pr-2">
-                        <h4 className="font-bold text-[#222222] truncate" title={`${dashboard.targetExam.certName} (${dashboard.targetExam.examType})`}>{dashboard.targetExam.certName} ({dashboard.targetExam.examType})</h4>
-                        <p className="text-[10px] text-[#717171] font-bold mt-1 uppercase">Exam: {dashboard.targetExam.examDate}</p>
-                      </div>
-                    </div>
-                    <div className="text-right flex flex-col items-end shrink-0 pl-2 border-l border-[#DDDDDD]">
-                      <button onClick={handleDeleteSchedule} className="text-[#717171] hover:text-red-500 mb-1 transition opacity-0 group-hover:opacity-100" title="일정 삭제"><Trash2 size={14} /></button>
-                      <span className="text-xl font-black text-[#D9A23A] whitespace-nowrap leading-none mt-1">{dashboard.targetExam.dDay <= 0 ? 'D-Day' : `D-${dashboard.targetExam.dDay}`}</span>
-                    </div>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-[8px] h-2.5"><div className="bg-[#3BAA7D] h-2.5 rounded-[8px]" style={{ width: `${Math.min(100, Number(dashboard.targetExam.achievementRate))}%` }}></div></div>
-                  <p className="text-right text-xs text-[#717171] mt-2 font-bold">목표 달성률: {dashboard.targetExam.achievementRate}%</p>
-                </div>
-              ) : (
-                <div className="p-6 bg-[#F7F7F7] border border-[#DDDDDD] rounded-[12px] text-center text-[#717171] font-bold text-sm">목표 시험 일정이 없습니다.<br/>우측 상단 '추가' 버튼으로 등록해보세요.</div>
-              )}
+              {dashboard.targetExams && dashboard.targetExams.length > 0 ? (
+  <div className="space-y-4">
+    {dashboard.targetExams.map(exam => (
+      <div key={exam.id} className="p-6 bg-[#FF385C]/5 border border-[#FF385C]/20 rounded-[12px] group">
+        <div className="flex justify-between items-start mb-4 gap-2">
+          <div className="flex items-center space-x-3 min-w-0 flex-1">
+            <div className="w-1.5 h-10 bg-[#D9A23A] rounded-[8px] shrink-0"></div>
+            <div className="text-left min-w-0 pr-2">
+              <h4 className="font-bold text-[#222222] truncate" title={`${exam.certName} (${exam.examType})`}>{exam.certName} ({exam.examType})</h4>
+              <p className="text-[10px] text-[#717171] font-bold mt-1 uppercase">Exam: {exam.examDate}</p>
+            </div>
+          </div>
+          <div className="text-right flex flex-col items-end shrink-0 pl-2 border-l border-[#DDDDDD]">
+            <button onClick={() => handleDeleteSchedule(exam.id)} className="text-[#717171] hover:text-red-500 mb-1 transition opacity-0 group-hover:opacity-100" title="일정 삭제"><Trash2 size={14} /></button>
+            <span className="text-xl font-black text-[#D9A23A] whitespace-nowrap leading-none mt-1">{exam.dDay <= 0 ? 'D-Day' : `D-${exam.dDay}`}</span>
+          </div>
+        </div>
+        <div className="w-full bg-gray-200 rounded-[8px] h-2.5"><div className="bg-[#3BAA7D] h-2.5 rounded-[8px]" style={{ width: `${Math.min(100, Number(exam.achievementRate))}%` }}></div></div>
+        <p className="text-right text-xs text-[#717171] mt-2 font-bold">목표 달성률: {exam.achievementRate}%</p>
+      </div>
+    ))}
+  </div>
+) : (
+  <div className="p-6 bg-[#F7F7F7] border border-[#DDDDDD] rounded-[12px] text-center text-[#717171] font-bold text-sm">목표 시험 일정이 없습니다.<br/>우측 상단 '추가' 버튼으로 등록해보세요.</div>
+)}
             </section>
 
             <section className="bg-[#4A4F58] p-8 rounded-[12px] text-white ">

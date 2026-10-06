@@ -3,8 +3,10 @@ import { FileText, Plus, Trash2, Sparkles, CheckCircle2, Loader2, Copy } from 'l
 import { aiApi } from '../api/aiApi';
 
 const COVER_LETTER_TAGS = [
-  '지원동기', '직무역량', '실수 경험', '개선 경험', 
-  '협업 경험', '문제 해결 경험', '성격의 장단점', '입사 후 포부'
+  '지원동기', '직무역량', '성격의 장단점', '입사 후 포부',
+  '도전 경험', '성장 과정', '가치관 및 생활신조', '리더십 경험', 
+  '창의적 문제해결', '실패 극복 경험', '갈등 관리 경험', 
+  '직무 관련 프로젝트', '협업 경험', '학업 외 활동(동아리 등)'
 ];
 
 const CoverLetterPage = () => {
@@ -116,7 +118,7 @@ const CoverLetterPage = () => {
             <FileText className="text-[#FF385C] w-7 h-7" />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-black text-[#222222]">AI 자기소개서 작성</h1>
+            <h1 className="text-2xl md:text-3xl font-black text-[#222222]">자기소개서 작성</h1>
             <p className="text-[#717171] font-medium mt-1">경험과 키워드를 조합하여 맞춤형 자소서를 완성해보세요!</p>
           </div>
         </div>

@@ -18,18 +18,16 @@ const CalendarPage = () => {
     userApi.getDashboard().then(res => setDashboard(res.data)).catch(console.error);
   }, []);
 
-  const mySchedules = dashboard?.targetExam ? [
-      { 
-        id: 1, 
-        name: `${dashboard.targetExam.certName} (${dashboard.targetExam.examType})`, 
-        date: dashboard.targetExam.examDate, 
-        dday: dashboard.targetExam.dDay <= 0 ? 'D-Day' : `D-${dashboard.targetExam.dDay}`, 
-        type: 'exam', 
-        examType: dashboard.targetExam.examType,
-        color: '#D9A23A',
-        examDateObj: new Date(dashboard.targetExam.examDate)
-      }
-    ] : [];
+  const mySchedules = dashboard?.targetExams ? dashboard.targetExams.map((exam, index) => ({
+      id: `my-${index}`, 
+      name: `${exam.certName} (${exam.examType})`, 
+      date: exam.examDate, 
+      dday: exam.dDay <= 0 ? 'D-Day' : `D-${exam.dDay}`, 
+      type: 'exam', 
+      examType: exam.examType,
+      color: '#D9A23A',
+      examDateObj: new Date(exam.examDate)
+  })) : [];
 
   // 현재 선택된 고사장 상태 관리 (기본값 설정)
 
@@ -92,8 +90,7 @@ const CalendarPage = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
         <div>
           <h2 className="text-3xl font-black text-[#4A4F58] flex items-center">
-            <CalIcon className="mr-3 text-[#3478B8]" size={32} />
-            스마트 일정 관리
+            일정관리
           </h2>
           <p className="text-[#717171] font-medium mt-1">개인별 맞춤 시험 일정과 고사장 위치를 확인합니다.</p>
         </div>

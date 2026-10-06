@@ -269,13 +269,8 @@ const StudyPage = () => {
         {/* Hero Section */}
         <header className="relative py-24 px-6 bg-white border-b border-[#DDDDDD] overflow-hidden">
           <div className="max-w-5xl mx-auto text-center relative z-10">
-            <div className="inline-flex items-center space-x-2 bg-[#FF385C]/5 px-4 py-2 rounded-[8px] mb-8 border border-[#FF385C]/10">
-              <Cpu size={14} className="text-[#FF385C]" />
-              <span className="text-[10px] font-black text-[#FF385C] uppercase tracking-widest">AI Mock Exam System</span>
-            </div>
-            <h1 className="text-4xl md:text-6xl font-black mb-8 leading-[1.15]">
-              {userName ? `${userName}님을 위한` : '당신을 위한'}, <br />
-              <span className="text-[#FF385C]">실전 AI 모의고사</span>
+            <h1 className="text-4xl md:text-6xl font-black mb-8 leading-[1.15] text-[#222222]">
+              실전 모의고사
             </h1>
             <p className="text-[#717171] text-lg mb-12 font-medium max-w-2xl mx-auto">
               실제 시험과 동일한 환경에서 실력을 점검하고 취약점을 파악하세요.
