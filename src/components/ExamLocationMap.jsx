@@ -60,7 +60,7 @@ const ExamLocationMap = ({ address, centerName }) => {
       {/* 지도가 그려질 영역 (Tailwind CSS 적용) */}
       <div
         ref={mapContainer}
-        className="w-full h-[350px] rounded-xl border border-gray-200 shadow-sm"
+        className="w-full h-[260px] md:h-[350px] rounded-xl border border-gray-200 shadow-sm"
       />
     </div>
   )

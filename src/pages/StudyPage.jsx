@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import {
   Cpu, Timer, CheckCircle, XCircle, Search, BookOpen,
-  RotateCcw, ChevronLeft, ChevronRight, Check, Zap
+  RotateCcw, ChevronLeft, ChevronRight, ChevronUp, Check, Zap, X, LayoutGrid
 } from 'lucide-react'
 import { examApi } from '../api/examApi'
 import { authApi } from '../api/authApi'
@@ -33,6 +33,23 @@ const StudyPage = () => {
   const [userAnswers, setUserAnswers] = useState({})
   const [isLoading, setIsLoading] = useState(false)
   const [explainingId, setExplainingId] = useState(null) // AI 해설 생성 중인 문제의 learnId
+  const [isOmrOpen, setIsOmrOpen] = useState(false) // 모바일 답안 현황 바텀시트
+
+  // 바텀시트가 열려 있는 동안 뒤 페이지가 스크롤되지 않게 막는다
+  useEffect(() => {
+    if (!isOmrOpen) return
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prevOverflow }
+  }, [isOmrOpen])
+
+  // 화면이 데스크톱 폭(lg)으로 넓어지면 바텀시트는 쓰지 않으므로 닫는다
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)')
+    const handleChange = (e) => { if (e.matches) setIsOmrOpen(false) }
+    mq.addEventListener('change', handleChange)
+    return () => mq.removeEventListener('change', handleChange)
+  }, [])
 
   // 타이머 상태 (90분 = 5400초)
   const [timeLeft, setTimeLeft] = useState(5400)
@@ -281,44 +298,44 @@ const StudyPage = () => {
     return (
       <div className="min-h-screen bg-[#EAECEF] font-sans text-[#4A4F58]">
         {/* Hero Section */}
-        <header className="relative py-24 px-6 bg-white border-b border-gray-200 overflow-hidden">
+        <header className="relative py-12 md:py-24 px-4 md:px-6 bg-white border-b border-gray-200 overflow-hidden">
           <div className="max-w-5xl mx-auto text-center relative z-10">
-            <h1 className="text-4xl md:text-6xl font-black mb-8 leading-[1.15]">
+            <h1 className="text-4xl md:text-6xl font-black mb-4 md:mb-8 leading-[1.15]">
               <span className="text-[#3478B8]">실전 모의고사</span>
             </h1>
-            <p className="text-gray-400 text-lg mb-12 font-medium max-w-2xl mx-auto">
+            <p className="text-gray-400 text-sm md:text-lg mb-8 md:mb-12 font-medium max-w-2xl mx-auto break-keep">
               실제 시험과 동일한 환경에서 실력을 점검하고 취약점을 파악하세요.
             </p>
 
             {/* 통합 검색창 */}
-            <div className="relative max-w-3xl mx-auto flex flex-col md:flex-row shadow-2xl rounded-3xl overflow-hidden border border-gray-100 bg-white">
+            <div className="relative max-w-3xl mx-auto flex flex-col md:flex-row shadow-xl md:shadow-2xl rounded-2xl md:rounded-3xl overflow-hidden border border-gray-100 bg-white">
               <div className="flex-1 relative">
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="학습할 자격증 명칭을 검색합니다 (예: 정보처리, SQLD...)"
-                  className="w-full p-6 pl-14 outline-none text-base font-medium placeholder:text-gray-300"
+                  placeholder="자격증 검색 (예: 정보처리, SQLD...)"
+                  className="w-full p-4 md:p-6 pl-12 md:pl-14 outline-none text-base font-medium placeholder:text-gray-300"
                 />
-                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300" size={22} />
+                <Search className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 text-gray-300" size={22} />
               </div>
             </div>
           </div>
         </header>
 
-        <main className="max-w-5xl mx-auto px-6 py-16 space-y-12">
+        <main className="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-16 space-y-8 md:space-y-12">
           {/* 자격증 리스트 그리드 */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
             {filteredCerts.map((cert) => {
               const isSelected = selectedCert?.id === cert.id
               return (
                 <div
                   key={cert.id}
                   onClick={() => setSelectedCert(cert)}
-                  className={`p-8 rounded-[24px] border-2 transition-all cursor-pointer group hover:shadow-xl hover:shadow-[#3478B8]/5 bg-white
+                  className={`p-6 md:p-8 rounded-[24px] border-2 transition-all cursor-pointer group hover:shadow-xl hover:shadow-[#3478B8]/5 bg-white
                     ${isSelected ? 'border-[#3478B8] shadow-lg shadow-[#3478B8]/10' : 'border-gray-100 hover:border-[#3478B8]'}`}
                 >
-                  <div className="flex justify-between items-start mb-6">
+                  <div className="flex justify-between items-start mb-4 md:mb-6">
                     <div className="flex space-x-2">
                       <span className={`text-[9px] font-black px-2.5 py-1.5 rounded-lg border uppercase tracking-tighter
                         ${isSelected ? 'bg-[#3478B8] text-white border-[#3478B8]' : 'bg-gray-50 text-gray-400 border-gray-100'}`}
@@ -332,12 +349,12 @@ const StudyPage = () => {
                       </div>
                     )}
                   </div>
-                  <h4 className={`text-2xl font-black mb-3 transition-colors ${isSelected ? 'text-[#3478B8]' : 'group-hover:text-[#3478B8]'}`}>{cert.name}</h4>
+                  <h4 className={`text-xl md:text-2xl font-black mb-3 break-keep transition-colors ${isSelected ? 'text-[#3478B8]' : 'group-hover:text-[#3478B8]'}`}>{cert.name}</h4>
                   <div className="flex items-center text-xs text-gray-400 font-bold space-x-4 mb-3">
                     <span className="flex items-center"><BookOpen size={14} className="mr-1.5 text-gray-300" /> 총 {cert.questions}문항</span>
                   </div>
                   {cert.subjects && (
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex flex-wrap items-center gap-1.5">
                       {cert.subjects.map((n, i) => (
                         <span key={i} className="text-[10px] font-black px-2 py-1 rounded-md bg-gray-50 text-gray-400 border border-gray-100">
                           {i + 1}과목 {n}
@@ -353,7 +370,7 @@ const StudyPage = () => {
           <button
             disabled={!selectedCert || isLoading}
             onClick={startExam}
-            className={`w-full py-5 rounded-[24px] font-black text-lg transition-all shadow-xl
+            className={`w-full py-4 md:py-5 px-4 rounded-[24px] font-black text-base md:text-lg break-keep transition-all shadow-xl
               ${selectedCert ? 'bg-[#3478B8] text-white shadow-[#3478B8]/20 hover:bg-[#2e69a3]' : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'}`}
           >
             {isLoading ? '시험지 준비 중...' : (selectedCert ? `"${selectedCert.name}" 학습 시작하기` : '응시할 종목을 선택해 주세요')}
@@ -389,26 +406,63 @@ const StudyPage = () => {
     return 'bg-gray-50 text-gray-400 border-gray-100 hover:border-gray-300'
   }
 
+  // 답안 현황 번호판 — 데스크톱 우측 패널과 모바일 바텀시트가 같이 쓴다
+  const renderOmrGrid = (onPick) => omrGroups.map((group) => (
+    <div key={group.subjectNum}>
+      {group.subjectNum > 0 && (
+        <div className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 pl-0.5">
+          {subjectLabel(group.subjectNum)}
+        </div>
+      )}
+      <div className="grid grid-cols-6 sm:grid-cols-10 lg:grid-cols-5 gap-2 md:gap-2.5 content-start">
+        {group.items.map(({ question, idx }) => {
+          const isAnswered = !!userAnswers[question.learnId]
+          return (
+            <button
+              key={question.learnId}
+              onClick={() => onPick(idx)}
+              className={`h-10 md:h-12 rounded-xl text-sm font-black border transition-all flex items-center justify-center ${omrBtnClass(question, idx)}`}
+            >
+              {isAnswered && !isGraded && currentIndex !== idx ? <Check size={16} strokeWidth={3} /> : idx + 1}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  ))
+
+  const pickFromSheet = (idx) => {
+    setCurrentIndex(idx)
+    setIsOmrOpen(false)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   // ==========================================
   // [2단계 화면] CBT 문제 풀이
   // ==========================================
   return (
-    <div className="min-h-screen bg-[#EAECEF] font-sans text-[#4A4F58] py-8 px-6">
-      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-10">
+    <div className="min-h-screen bg-[#EAECEF] font-sans text-[#4A4F58] pt-4 pb-24 px-3 md:pt-8 md:px-6 lg:pb-8">
+      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6 lg:gap-10">
         {/* 좌측: 문제 영역 */}
-        <div className="flex-1 flex flex-col gap-6 w-full">
-          <header className="flex items-center justify-between bg-white rounded-[24px] p-6 border border-gray-100 shadow-sm">
-            <div className="flex items-center space-x-4">
+        <div className="flex-1 flex flex-col gap-4 md:gap-6 w-full min-w-0">
+          {/* 모바일에서는 헤더를 상단에 고정해 남은 시간·진행률을 항상 보이게 한다 */}
+          <header className="sticky top-14 sm:top-16 lg:static z-20 flex items-center justify-between gap-3 bg-white rounded-[20px] md:rounded-[24px] p-4 md:p-6 border border-gray-100 shadow-sm">
+            <div className="flex items-center space-x-3 md:space-x-4 min-w-0">
               <button onClick={() => { if (window.confirm('시험을 중단하시겠습니까? 기록이 저장되지 않습니다.')) setIsStarted(false) }}
-                className="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-400 rounded-full transition-colors border border-gray-100"
+                className="w-10 h-10 shrink-0 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-400 rounded-full transition-colors border border-gray-100"
               >
                 <RotateCcw size={18} />
               </button>
-              <h2 className="text-xl md:text-2xl font-black tracking-tight">{selectedCert.name} 모의고사</h2>
+              <h2 className="text-base md:text-2xl font-black tracking-tight truncate">{selectedCert.name} 모의고사</h2>
             </div>
-            <div className="flex flex-col items-end">
+            <div className="flex flex-col items-end shrink-0">
+              {!isGraded && (
+                <div className={`lg:hidden text-sm font-mono font-black mb-1 ${timeLeft < 600 ? 'text-[#E61E2B]' : 'text-[#D9A23A]'}`}>
+                  <Timer size={14} className="inline mr-1 -mt-0.5" />{formatTime(timeLeft)}
+                </div>
+              )}
               <div className="text-xs font-black text-gray-400 tracking-tighter mb-1.5">진행률 {currentIndex + 1} / {questions.length}</div>
-              <div className="w-32 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+              <div className="w-20 md:w-32 bg-gray-100 rounded-full h-1.5 overflow-hidden">
                 <div
                   className="bg-[#3478B8] h-1.5 rounded-full transition-all duration-300"
                   style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
@@ -418,10 +472,10 @@ const StudyPage = () => {
           </header>
 
           {q && (
-            <div className="bg-white p-8 md:p-12 rounded-[32px] border border-gray-100 shadow-sm flex-1 flex flex-col">
-              <div className="mb-10">
-                <div className="flex justify-between items-center mb-6">
-                  <div className="flex items-center gap-2">
+            <div className="bg-white p-5 md:p-12 rounded-[24px] md:rounded-[32px] border border-gray-100 shadow-sm flex-1 flex flex-col">
+              <div className="mb-6 md:mb-10">
+                <div className="flex flex-wrap justify-between items-center gap-2 mb-4 md:mb-6">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="text-[12px] font-black text-[#3478B8] uppercase tracking-widest bg-[#3478B8]/10 px-4 py-2 rounded-full flex items-center">
                       <Zap size={14} className="mr-1.5" /> Question {String(currentIndex + 1).padStart(2, '0')}
                     </span>
@@ -441,7 +495,7 @@ const StudyPage = () => {
                 <QuestionBody text={q.question} />
               </div>
 
-              <div className="space-y-4 flex-1">
+              <div className="space-y-3 md:space-y-4 flex-1">
                 {q.optionsArray.map((opt, optIdx) => (
                   <Option
                     key={optIdx}
@@ -455,8 +509,8 @@ const StudyPage = () => {
               </div>
 
               {isGraded && q.explanation && (
-                <div className="mt-10 p-6 rounded-[24px] bg-[#3BAA7D]/5 border border-[#3BAA7D]/20 text-[#4A4F58] text-sm leading-relaxed">
-                  <div className="flex items-center justify-between mb-3">
+                <div className="mt-6 md:mt-10 p-5 md:p-6 rounded-[24px] bg-[#3BAA7D]/5 border border-[#3BAA7D]/20 text-[#4A4F58] text-sm leading-relaxed">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                     <span className="text-[#3BAA7D] font-black tracking-tight flex items-center">
                       <CheckCircle size={16} className="mr-1.5" /> 문제 해설
                     </span>
@@ -479,11 +533,11 @@ const StudyPage = () => {
               )}
 
               {isGraded && !q.explanation && (
-                <div className="mt-10">
+                <div className="mt-6 md:mt-10">
                   <button
                     onClick={() => generateExplanation(q.learnId)}
                     disabled={explainingId === q.learnId}
-                    className="w-full py-5 rounded-[24px] font-black text-[15px] transition-all border-2 border-dashed border-[#3478B8]/30 text-[#3478B8] bg-[#3478B8]/5 hover:bg-[#3478B8]/10 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="w-full py-4 md:py-5 rounded-[24px] font-black text-[15px] transition-all border-2 border-dashed border-[#3478B8]/30 text-[#3478B8] bg-[#3478B8]/5 hover:bg-[#3478B8]/10 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
                   >
                     <Zap size={16} className={`mr-2 ${explainingId === q.learnId ? 'animate-pulse' : ''}`} />
                     {explainingId === q.learnId ? 'AI가 해설을 생성 중입니다...' : '이 문제 AI 해설 보기'}
@@ -493,18 +547,18 @@ const StudyPage = () => {
             </div>
           )}
 
-          <div className="flex justify-between items-center space-x-4">
+          <div className="flex justify-between items-center space-x-3 md:space-x-4">
             <button
               onClick={goToPrev}
               disabled={currentIndex === 0}
-              className="flex items-center px-8 py-5 bg-white border border-gray-200 hover:bg-gray-50 text-[#4A4F58] rounded-2xl transition disabled:opacity-50 disabled:cursor-not-allowed font-black"
+              className="flex items-center shrink-0 px-4 md:px-8 py-4 md:py-5 bg-white border border-gray-200 hover:bg-gray-50 text-[#4A4F58] rounded-2xl transition disabled:opacity-50 disabled:cursor-not-allowed font-black"
             >
-              <ChevronLeft className="mr-2" size={20} /> 이전 문항
+              <ChevronLeft className="mr-1 md:mr-2" size={20} /> 이전<span className="hidden sm:inline">&nbsp;문항</span>
             </button>
             <button
               onClick={goToNext}
               disabled={currentIndex === questions.length - 1}
-              className="flex items-center flex-1 justify-center px-8 py-5 bg-[#3478B8]/10 hover:bg-[#3478B8]/20 border border-[#3478B8]/20 text-[#3478B8] rounded-2xl transition font-black disabled:opacity-30 disabled:cursor-not-allowed"
+              className="flex items-center flex-1 justify-center px-4 md:px-8 py-4 md:py-5 bg-[#3478B8]/10 hover:bg-[#3478B8]/20 border border-[#3478B8]/20 text-[#3478B8] rounded-2xl transition font-black disabled:opacity-30 disabled:cursor-not-allowed"
             >
               다음 문항 <ChevronRight className="ml-2" size={20} />
             </button>
@@ -512,9 +566,9 @@ const StudyPage = () => {
         </div>
 
         {/* 우측: OMR 및 정보 패널 */}
-        <div className="w-full lg:w-[380px] flex flex-col gap-6 shrink-0">
+        <div className="w-full lg:w-[380px] flex flex-col gap-4 md:gap-6 shrink-0">
           {isGraded && result ? (
-            <div className="bg-[#4A4F58] rounded-[32px] p-8 text-white shadow-2xl relative overflow-hidden border border-gray-800">
+            <div className="bg-[#4A4F58] rounded-[24px] md:rounded-[32px] p-6 md:p-8 text-white shadow-2xl relative overflow-hidden border border-gray-800">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16"></div>
               <div className="text-center mb-6">
                 <div className="text-gray-300 font-black text-xs mb-3 uppercase tracking-widest">Total Score</div>
@@ -549,7 +603,7 @@ const StudyPage = () => {
               )}
             </div>
           ) : (
-            <div className="bg-[#4A4F58] rounded-[32px] p-8 text-white shadow-2xl relative overflow-hidden text-center border border-gray-800">
+            <div className="hidden lg:block bg-[#4A4F58] rounded-[32px] p-8 text-white shadow-2xl relative overflow-hidden text-center border border-gray-800">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16"></div>
               <div className="text-gray-300 font-black text-xs mb-3 uppercase tracking-widest flex items-center justify-center">
                 <Timer size={16} className="mr-2" /> Remaining Time
@@ -560,7 +614,8 @@ const StudyPage = () => {
             </div>
           )}
 
-          <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm flex-1 flex flex-col min-h-[300px]">
+          {/* 데스크톱 답안 현황 (모바일은 하단 바텀시트로 대체) */}
+          <div className="hidden lg:flex bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm flex-1 flex-col min-h-[300px]">
             <div className="flex justify-between items-center mb-8">
               <h3 className="font-black text-lg flex items-center tracking-tight">
                 <BookOpen size={18} className="mr-2 text-[#3478B8]" /> 답안 현황
@@ -571,39 +626,72 @@ const StudyPage = () => {
             </div>
 
             <div className="overflow-y-auto pr-2 flex-1 custom-scrollbar space-y-5">
-              {omrGroups.map((group) => (
-                <div key={group.subjectNum}>
-                  {group.subjectNum > 0 && (
-                    <div className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 pl-0.5">
-                      {subjectLabel(group.subjectNum)}
-                    </div>
-                  )}
-                  <div className="grid grid-cols-5 gap-2.5 content-start">
-                    {group.items.map(({ question, idx }) => {
-                      const isAnswered = !!userAnswers[question.learnId]
-                      return (
-                        <button
-                          key={question.learnId}
-                          onClick={() => setCurrentIndex(idx)}
-                          className={`h-12 rounded-xl text-sm font-black border transition-all flex items-center justify-center ${omrBtnClass(question, idx)}`}
-                        >
-                          {isAnswered && !isGraded && currentIndex !== idx ? <Check size={16} strokeWidth={3} /> : idx + 1}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-              ))}
+              {renderOmrGrid(setCurrentIndex)}
             </div>
           </div>
 
           <button
             onClick={submitExam}
             disabled={isGraded}
-            className="w-full bg-[#3BAA7D] hover:bg-[#31926b] text-white py-6 rounded-[24px] transition-colors font-black text-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-[#3BAA7D]/20 shrink-0 tracking-tight"
+            className="hidden lg:block w-full bg-[#3BAA7D] hover:bg-[#31926b] text-white py-6 rounded-[24px] transition-colors font-black text-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-[#3BAA7D]/20 shrink-0 tracking-tight"
           >
             {isGraded ? '채점 완료' + (isRetakeMode ? '' : ' (오답노트 저장됨)') : '답안 최종 제출하기'}
           </button>
+        </div>
+      </div>
+
+      {/* 모바일: 답안 현황 열기 버튼 (화면 하단 고정) */}
+      <button
+        onClick={() => setIsOmrOpen(true)}
+        className="lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 bg-[#4A4F58] text-white pl-4 pr-5 py-3 rounded-full shadow-xl shadow-black/20 font-black text-sm active:scale-95 transition-transform"
+      >
+        <LayoutGrid size={16} />
+        답안 현황
+        <span className="text-[#D9A23A]">{Object.keys(userAnswers).length}/{questions.length}</span>
+        <ChevronUp size={16} />
+      </button>
+
+      {/* 모바일: 답안 현황 바텀시트 (아래에서 슬라이드) */}
+      <div
+        className={`lg:hidden fixed inset-0 z-[60] ${isOmrOpen ? '' : 'pointer-events-none'}`}
+        aria-hidden={!isOmrOpen}
+      >
+        <div
+          onClick={() => setIsOmrOpen(false)}
+          className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${isOmrOpen ? 'opacity-100' : 'opacity-0'}`}
+        />
+        <div
+          role="dialog"
+          aria-label="답안 현황"
+          className={`absolute inset-x-0 bottom-0 max-h-[75vh] flex flex-col bg-white rounded-t-[28px] shadow-2xl transition-transform duration-300 ease-out ${isOmrOpen ? 'translate-y-0' : 'translate-y-full'}`}
+        >
+          <div className="pt-3 pb-1 flex justify-center shrink-0">
+            <div className="w-10 h-1.5 rounded-full bg-gray-200" />
+          </div>
+          <div className="flex justify-between items-center px-5 pt-2 pb-4 shrink-0">
+            <h3 className="font-black text-lg flex items-center tracking-tight">
+              <BookOpen size={18} className="mr-2 text-[#3478B8]" /> 답안 현황
+              <span className="ml-2 text-[11px] font-black bg-[#3478B8]/10 px-3 py-1 rounded-full text-[#3478B8]">
+                {Object.keys(userAnswers).length} / {questions.length}
+              </span>
+            </h3>
+            <button onClick={() => setIsOmrOpen(false)} className="p-2 -mr-2 text-gray-400" aria-label="닫기">
+              <X size={22} />
+            </button>
+          </div>
+          <div className="overflow-y-auto px-5 pb-4 space-y-5 flex-1 overscroll-contain">
+            {renderOmrGrid(pickFromSheet)}
+          </div>
+          {!isGraded && (
+            <div className="p-4 border-t border-gray-100 shrink-0">
+              <button
+                onClick={() => { setIsOmrOpen(false); submitExam() }}
+                className="w-full bg-[#3BAA7D] text-white py-4 rounded-2xl font-black text-base shadow-lg shadow-[#3BAA7D]/20"
+              >
+                답안 최종 제출하기
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -629,7 +717,7 @@ const QuestionBody = ({ text }) => {
         i % 2 === 1 ? (
           <pre
             key={i}
-            className="my-5 p-5 rounded-[20px] bg-[#2C313A] text-[#E6E8EB] text-[13px] md:text-sm leading-relaxed font-mono overflow-x-auto whitespace-pre"
+            className="my-4 md:my-5 p-4 md:p-5 rounded-[16px] md:rounded-[20px] bg-[#2C313A] text-[#E6E8EB] text-[12px] md:text-sm leading-relaxed font-mono overflow-x-auto whitespace-pre"
           >
             {/* 들여쓰기가 의미를 갖는 문항이 있으므로 공백을 보존한다 */}
             <code>{part.replace(/\n+$/, '')}</code>
@@ -638,7 +726,7 @@ const QuestionBody = ({ text }) => {
           part.trim() && (
             <h3
               key={i}
-              className="text-2xl md:text-3xl font-black leading-snug text-[#4A4F58] break-keep"
+              className="text-lg md:text-3xl font-black leading-snug text-[#4A4F58] break-keep"
             >
               {part.trim()}
             </h3>
@@ -671,9 +759,9 @@ const Option = ({ text, isSelected, isActualAnswer, isGraded, onClick }) => {
     <button
       onClick={onClick}
       disabled={isGraded}
-      className={`w-full p-5 text-left rounded-[20px] transition-all border-2 flex justify-between items-center group ${btnClass}`}
+      className={`w-full p-4 md:p-5 text-left rounded-[16px] md:rounded-[20px] transition-all border-2 flex justify-between items-center group ${btnClass}`}
     >
-      <span className="font-bold text-[15px]">{text}</span>
+      <span className="font-bold text-[15px] break-keep">{text}</span>
       {isGraded && isActualAnswer && <CheckCircle size={22} className="shrink-0 ml-4 text-[#3BAA7D]" />}
       {isGraded && isSelected && !isActualAnswer && <XCircle size={22} className="shrink-0 ml-4 text-[#E61E2B]" />}
       {!isGraded && isSelected && <CheckCircle size={22} className="shrink-0 ml-4 text-[#3478B8]" />}

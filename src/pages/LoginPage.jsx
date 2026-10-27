@@ -25,9 +25,9 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-[#EAECEF] flex items-center justify-center py-12 px-6">
-      <div className="max-w-md w-full bg-white rounded-[32px] shadow-2xl overflow-hidden border border-gray-100 transition-all">
-        <div className="bg-[#3478B8] p-10 text-center text-white relative overflow-hidden">
+    <div className="min-h-[calc(100vh-80px)] bg-[#EAECEF] flex items-center justify-center py-8 sm:py-12 px-4 sm:px-6">
+      <div className="max-w-md w-full bg-white rounded-[28px] sm:rounded-[32px] shadow-2xl overflow-hidden border border-gray-100 transition-all">
+        <div className="bg-[#3478B8] p-8 sm:p-10 text-center text-white relative overflow-hidden">
           <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12"></div>
           <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
             <Award size={28} className="text-white" />
@@ -36,7 +36,7 @@ const LoginPage = () => {
           <p className="text-[#EAECEF]/70 text-xs mt-2 font-medium tracking-tight">지능형 자격증 플랫폼에 다시 오신 것을 환영합니다.</p>
         </div>
 
-        <div className="p-10 space-y-8">
+        <div className="p-6 sm:p-10 space-y-6 sm:space-y-8">
           {/* 환경변수 활용 카카오 로그인 */}
           <button
             type="button"

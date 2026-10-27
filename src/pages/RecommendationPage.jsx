@@ -83,25 +83,25 @@ const RecommendationPage = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-slate-50 py-10 px-4 md:px-8">
+    <div className="min-h-[calc(100vh-64px)] bg-slate-50 py-6 md:py-10 px-4 md:px-8">
       <div className="max-w-4xl mx-auto">
-        
+
         {/* Header */}
-        <div className="text-center mb-10">
+        <div className="text-center mb-6 md:mb-10">
           <div className="inline-flex items-center justify-center p-3 bg-indigo-100 text-indigo-600 rounded-full mb-4">
             <Sparkles size={32} />
           </div>
           <h1 className="text-3xl md:text-4xl font-black text-slate-800 mb-4">AI 맞춤형 자격증 추천</h1>
-          <p className="text-gray-500 font-medium">나의 상황과 목표를 알려주시면, AI가 가장 완벽한 자격증 로드맵을 그려드립니다.</p>
+          <p className="text-sm md:text-base text-gray-500 font-medium break-keep">나의 상황과 목표를 알려주시면, AI가 가장 완벽한 자격증 로드맵을 그려드립니다.</p>
         </div>
 
         {/* Form Section */}
-        <div className="bg-white rounded-[32px] p-8 shadow-sm border border-gray-100 mb-8">
+        <div className="bg-white rounded-[24px] md:rounded-[32px] p-5 md:p-8 shadow-sm border border-gray-100 mb-8">
           
           {/* Tags */}
           <div className="mb-8">
-            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
-              <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs mr-2">1</span>
+            <h3 className="text-base md:text-lg font-bold text-slate-800 mb-4 flex items-center">
+              <span className="w-6 h-6 shrink-0 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs mr-2">1</span>
               관심있는 해시태그를 모두 골라주세요
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -109,7 +109,7 @@ const RecommendationPage = () => {
                 <button
                   key={tag}
                   onClick={() => toggleTag(tag)}
-                  className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                  className={`px-3 md:px-4 py-2 rounded-full text-xs md:text-sm font-bold transition-all ${
                     selectedTags.includes(tag) 
                     ? 'bg-blue-600 text-white border-transparent shadow-md' 
                     : 'bg-white text-gray-500 border border-gray-200 hover:border-blue-400 hover:text-blue-500'
@@ -123,8 +123,8 @@ const RecommendationPage = () => {
 
           {/* Text Input */}
           <div className="mb-8">
-            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
-              <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs mr-2">2</span>
+            <h3 className="text-base md:text-lg font-bold text-slate-800 mb-4 flex items-center">
+              <span className="w-6 h-6 shrink-0 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs mr-2">2</span>
               추가로 궁금한 점이나 현재 스펙을 자유롭게 적어주세요
             </h3>
             <textarea
@@ -140,7 +140,7 @@ const RecommendationPage = () => {
             <button
               onClick={handleSubmit}
               disabled={isLoading}
-              className="inline-flex items-center px-8 py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-full font-black text-lg transition-colors shadow-lg hover:shadow-xl"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-full font-black text-lg transition-colors shadow-lg hover:shadow-xl"
             >
               {isLoading ? (
                 <>
@@ -162,9 +162,9 @@ const RecommendationPage = () => {
         {/* Result Section */}
         {result && (
           <div className="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-[32px] p-6 md:p-10 text-white shadow-xl mb-12 animate-fade-in-up">
-            <div className="flex items-center mb-8 border-b border-white/20 pb-4">
-              <CheckCircle2 className="text-green-400 mr-3" size={28} />
-              <h2 className="text-2xl md:text-3xl font-black">AI 추천 로드맵이 도착했습니다!</h2>
+            <div className="flex items-center mb-6 md:mb-8 border-b border-white/20 pb-4">
+              <CheckCircle2 className="text-green-400 mr-3 shrink-0" size={28} />
+              <h2 className="text-xl md:text-3xl font-black break-keep">AI 추천 로드맵이 도착했습니다!</h2>
             </div>
             
             <div className="flex flex-col gap-4">
@@ -199,7 +199,7 @@ const RecommendationPage = () => {
                         <div className="text-center my-8">
                           <span 
                             onClick={() => setShowDetails(!showDetails)}
-                            className="inline-flex items-center px-6 py-3 bg-indigo-500/20 hover:bg-indigo-500/40 border border-indigo-400/30 rounded-full text-indigo-200 font-bold transition-all cursor-pointer shadow-sm hover:shadow-md"
+                            className="inline-flex items-center px-5 md:px-6 py-3 text-sm md:text-base break-keep bg-indigo-500/20 hover:bg-indigo-500/40 border border-indigo-400/30 rounded-full text-indigo-200 font-bold transition-all cursor-pointer shadow-sm hover:shadow-md"
                           >
                             {showDetails ? '상세 이유 닫기' : '왜 이 자격증을 추천했는지 궁금하다면?'} 
                             {showDetails ? <ChevronUp size={20} className="ml-2"/> : <ChevronDown size={20} className="ml-2 animate-bounce"/>}
@@ -257,7 +257,7 @@ const RecommendationPage = () => {
         {/* Schedule Modal */}
         {showScheduleModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative animate-fade-in-up">
+            <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl relative animate-fade-in-up">
               <button 
                 onClick={() => setShowScheduleModal(false)}
                 className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"

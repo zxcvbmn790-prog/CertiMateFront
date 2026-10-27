@@ -175,6 +175,12 @@ const CalendarPage = () => {
   const firstDayOfMonth = new Date(viewYear, viewMonth, 1).getDay();
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
 
+  // 모바일은 hover 툴팁을 쓸 수 없으므로 날짜를 탭하면 달력 아래에 그날 일정을 보여준다
+  const [selectedDay, setSelectedDay] = useState(null);
+  useEffect(() => { setSelectedDay(null); }, [viewYear, viewMonth, activeFilter]);
+  const getExamsOnDay = (day) => displayedSchedules.filter(s => s.examDateObj && s.examDateObj.getDate() === day && s.examDateObj.getMonth() === viewMonth && s.examDateObj.getFullYear() === viewYear);
+  const selectedDayExams = selectedDay ? getExamsOnDay(selectedDay) : [];
+
 
   const [selectedLocation, setSelectedLocation] = useState({
     centerName: '서울디지털대학교',
@@ -182,38 +188,38 @@ const CalendarPage = () => {
   })
 
   return (
-    <main className="max-w-7xl mx-auto px-6 py-10">
+    <main className="w-full max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10">
       {/* 상단 헤더 및 필터 */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-10 gap-4">
         <div>
-          <h2 className="text-3xl font-black text-[#4A4F58] flex items-center">
-            <CalIcon className="mr-3 text-[#3478B8]" size={32} />
+          <h2 className="text-2xl md:text-3xl font-black text-[#4A4F58] flex items-center">
+            <CalIcon className="mr-2 md:mr-3 text-[#3478B8] w-7 h-7 md:w-8 md:h-8" />
             일정관리
           </h2>
-          <p className="text-gray-400 font-medium mt-1">개인별 맞춤 시험 일정과 고사장 위치를 확인합니다.</p>
+          <p className="text-sm md:text-base text-gray-400 font-medium mt-1">개인별 맞춤 시험 일정과 고사장 위치를 확인합니다.</p>
         </div>
 
-        <div className="flex bg-white p-1.5 rounded-2xl border border-gray-200 shadow-sm">
+        <div className="flex w-full md:w-auto bg-white p-1.5 rounded-2xl border border-gray-200 shadow-sm">
           <button
             onClick={() => setActiveFilter('mine')}
-            className={`px-6 py-2 rounded-xl text-xs font-black transition ${activeFilter === 'mine' ? 'bg-[#3478B8] text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}
+            className={`flex-1 md:flex-none px-4 md:px-6 py-2 rounded-xl text-xs font-black transition ${activeFilter === 'mine' ? 'bg-[#3478B8] text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}
           >
             내 일정 (Scrapped)
           </button>
           <button
             onClick={() => setActiveFilter('all')}
-            className={`px-6 py-2 rounded-xl text-xs font-black transition ${activeFilter === 'all' ? 'bg-[#3478B8] text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}
+            className={`flex-1 md:flex-none px-4 md:px-6 py-2 rounded-xl text-xs font-black transition ${activeFilter === 'all' ? 'bg-[#3478B8] text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}
           >
             전체 시험 일정
           </button>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-12 gap-8">
+      <div className="grid lg:grid-cols-12 gap-6 lg:gap-8">
         {/* 1. 메인 캘린더 섹션 */}
-        <div className="lg:col-span-8 space-y-6">
-          <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
-            <div className="flex justify-between items-center mb-8">
+        <div className="lg:col-span-8 space-y-4 md:space-y-6">
+          <div className="bg-white p-4 md:p-8 rounded-[24px] md:rounded-[32px] border border-gray-100 shadow-sm">
+            <div className="flex justify-between items-center mb-4 md:mb-8">
               <h3 className="text-xl font-black flex items-center">
                   {`${viewYear}년 ${viewMonth + 1}월`}
                 </h3>
@@ -223,35 +229,36 @@ const CalendarPage = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-7 mb-4">
+            <div className="grid grid-cols-7 mb-2 md:mb-4">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="text-center text-[10px] font-black text-gray-300 uppercase tracking-widest py-2">{day}</div>
+                <div key={day} className="text-center text-[10px] font-black text-gray-300 uppercase tracking-tighter md:tracking-widest py-2">{day}</div>
               ))}
               </div>
-            <div className="grid grid-cols-7 gap-2">
+            <div className="grid grid-cols-7 gap-1 md:gap-2">
               {[...Array(firstDayOfMonth)].map((_, i) => (
-                  <div key={`empty-${i}`} className="h-28 p-3 rounded-2xl border border-transparent"></div>
+                  <div key={`empty-${i}`} className="h-14 sm:h-20 md:h-28 p-3 rounded-2xl border border-transparent"></div>
                 ))}
                 {[...Array(daysInMonth)].map((_, i) => {
                   const day = i + 1;
-                  const examsOnDay = displayedSchedules.filter(s => s.examDateObj && s.examDateObj.getDate() === day && s.examDateObj.getMonth() === viewMonth && s.examDateObj.getFullYear() === viewYear);
+                  const examsOnDay = getExamsOnDay(day);
                   const isExam = examsOnDay.length > 0;
                   const isReg = false;
                   return (
-                    <div key={i} className={`h-28 p-2 rounded-2xl border transition group cursor-pointer ${
+                    <div key={i} onClick={() => setSelectedDay(selectedDay === day ? null : day)} className={`h-14 sm:h-20 md:h-28 p-1 md:p-2 rounded-xl md:rounded-2xl border transition group cursor-pointer ${
+                      selectedDay === day ? 'ring-2 ring-[#3478B8] ' : ''}${
                       isExam ? 'bg-[#D9A23A]/5 border-[#D9A23A]/30' :
                       isReg ? 'bg-[#3478B8]/5 border-[#3478B8]/30' :
                       'bg-gray-50 border-transparent hover:border-gray-200'
                     }`}>
-                      <span className={`text-sm font-black ${isExam ? 'text-[#D9A23A]' : isReg ? 'text-[#3478B8]' : 'text-gray-400'}`}>
+                      <span className={`text-xs md:text-sm font-black ${isExam ? 'text-[#D9A23A]' : isReg ? 'text-[#3478B8]' : 'text-gray-400'}`}>
                         {day}
                       </span>
                       {isReg && <div className="mt-1 text-[9px] font-black bg-[#3478B8] text-white p-1 rounded-md truncate">접수 시작</div>}
-                      <div className="flex flex-wrap gap-2 mt-2">
+                      <div className="flex flex-wrap gap-1 md:gap-2 mt-1 md:mt-2">
                         {examsOnDay.map((eObj, idx) => (
                           <div key={idx} className="relative group/tooltip">
-                            <div className="w-2.5 h-2.5 bg-[#D9A23A] rounded-full shadow-sm hover:scale-125 transition-transform cursor-pointer"></div>
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-gray-900 text-white text-[11px] font-black rounded-lg opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all whitespace-nowrap z-[999] shadow-xl pointer-events-none">
+                            <div className="w-1.5 h-1.5 md:w-2.5 md:h-2.5 bg-[#D9A23A] rounded-full shadow-sm hover:scale-125 transition-transform cursor-pointer"></div>
+                            <div className="hidden md:block absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-gray-900 text-white text-[11px] font-black rounded-lg opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all whitespace-nowrap z-[999] shadow-xl pointer-events-none">
                               {eObj.name} {eObj.examType || ''}
                               <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
                             </div>
@@ -262,9 +269,28 @@ const CalendarPage = () => {
                   )
                 })}
             </div>
+
+            {/* 선택한 날짜의 일정 (모바일 전용 — 데스크톱은 hover 툴팁) */}
+            {selectedDay && (
+              <div className="md:hidden mt-4 p-4 rounded-2xl bg-gray-50 border border-gray-100">
+                <p className="text-xs font-black text-gray-400 mb-2">{viewMonth + 1}월 {selectedDay}일 일정</p>
+                {selectedDayExams.length === 0 ? (
+                  <p className="text-sm font-bold text-gray-400">일정이 없습니다.</p>
+                ) : (
+                  <ul className="space-y-1.5">
+                    {selectedDayExams.map((eObj, idx) => (
+                      <li key={idx} className="text-sm font-bold text-[#4A4F58] flex items-center">
+                        <span className="w-2 h-2 bg-[#D9A23A] rounded-full mr-2 shrink-0"></span>
+                        {eObj.name} {eObj.examType || ''}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
           </div>
 
-          <div className="flex items-center justify-between p-6 bg-white rounded-2xl border border-gray-100 shadow-sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 md:p-6 bg-white rounded-2xl border border-gray-100 shadow-sm">
             <div className="flex space-x-6">
               <div className="flex items-center text-[10px] font-bold text-gray-400">
                 <div className="w-3 h-3 bg-[#3478B8] rounded-full mr-2"></div> 원서접수
@@ -285,7 +311,7 @@ const CalendarPage = () => {
 
         {/* 2. 사이드바: D-Day 및 고사장 안내 */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-[#4A4F58] p-8 rounded-[32px] text-white shadow-xl">
+          <div className="bg-[#4A4F58] p-6 md:p-8 rounded-[24px] md:rounded-[32px] text-white shadow-xl">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-bold flex items-center tracking-tight">
                 <Clock className="mr-2 text-[#3BAA7D]" size={18} /> 다가오는 일정
@@ -313,12 +339,12 @@ const CalendarPage = () => {
                 return upcomingList.map(item => (
 
                 <div key={item.id} className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition cursor-pointer group">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-sm font-bold group-hover:text-[#3BAA7D] transition-colors">{item.name}</p>
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold group-hover:text-[#3BAA7D] transition-colors break-keep">{item.name}</p>
                       <p className="text-[10px] text-gray-400 mt-1">{item.date}</p>
                     </div>
-                    <span className="text-xs font-black" style={{ color: item.color }}>{item.dday}</span>
+                    <span className="text-xs font-black shrink-0" style={{ color: item.color }}>{item.dday}</span>
                   </div>
                 </div>
               ));
@@ -327,7 +353,7 @@ const CalendarPage = () => {
           </div>
 
           {/* 고사장 검색 위젯 */}
-          <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
+          <div className="bg-white p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-gray-100 shadow-sm">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-black flex items-center">
                 <Search className="mr-2 text-[#3478B8]" size={18} /> 고사장 검색
@@ -388,15 +414,15 @@ const CalendarPage = () => {
       {/* 카카오톡 시험 일정 자동 알림 설정 모달 */}
       {isNotifyModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-[32px] p-8 w-full max-w-md shadow-2xl relative border border-gray-100">
+          <div className="bg-white rounded-[24px] md:rounded-[32px] p-6 md:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl relative border border-gray-100">
             <button
               onClick={() => setIsNotifyModalOpen(false)}
-              className="absolute top-6 right-6 text-gray-400 hover:text-gray-600"
+              className="absolute top-5 right-5 md:top-6 md:right-6 text-gray-400 hover:text-gray-600"
             >
               <X size={24} />
             </button>
 
-            <div className="flex items-center space-x-3 mb-6">
+            <div className="flex items-center space-x-3 mb-6 pr-8">
               <div className="w-12 h-12 rounded-2xl bg-[#FEE500] flex items-center justify-center shrink-0">
                 <BellRing className="text-[#3c1e1e]" size={24} />
               </div>
@@ -408,7 +434,7 @@ const CalendarPage = () => {
 
             <div className="space-y-5">
               {/* 연동 상태 */}
-              <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex justify-between items-center">
+              <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex flex-wrap justify-between items-center gap-3">
                 <div>
                   <p className="text-xs font-black text-gray-400 uppercase">카카오톡 연동 상태</p>
                   <p className="text-sm font-black text-[#4A4F58] mt-1 flex items-center">

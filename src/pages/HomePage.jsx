@@ -18,28 +18,28 @@ const HomePage = () => {
   return (
     <div className="w-full min-h-[calc(100vh-64px)] bg-slate-50 flex flex-col items-center pb-12">
       {/* Top Banner */}
-      <div className="w-full bg-[#3478B8]/10 py-3 flex justify-center items-center text-sm font-bold text-[#3478B8]">
-        <span className="bg-[#3478B8] text-white px-2 py-0.5 rounded text-xs mr-3">안내</span>
-        [공지] 2026년 하반기 정보처리기사 실기 시험 접수 안내
-        <span className="ml-4 text-xs font-normal underline cursor-pointer">자세히보기 &gt;</span>
+      <div className="w-full bg-[#3478B8]/10 py-3 px-4 flex justify-center items-center text-xs sm:text-sm font-bold text-[#3478B8]">
+        <span className="bg-[#3478B8] text-white px-2 py-0.5 rounded text-xs mr-3 shrink-0">안내</span>
+        <span className="truncate">[공지] 2026년 하반기 정보처리기사 실기 시험 접수 안내</span>
+        <span className="hidden sm:inline ml-4 text-xs font-normal underline cursor-pointer shrink-0">자세히보기 &gt;</span>
       </div>
 
-      <div className="max-w-7xl w-full px-4 pt-10">
+      <div className="max-w-7xl w-full px-4 pt-6 sm:pt-10">
         
         {/* Main Grid: 12 Columns */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 mb-6 sm:mb-8">
           
           {/* Box 1 (Left, Col-4) - CBT Mock Exam */}
           <div 
             onClick={() => handleNav('/study')}
-            className="md:col-span-4 bg-[#3478B8] rounded-[32px] p-8 text-white relative overflow-hidden cursor-pointer group shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
+            className="md:col-span-4 bg-[#3478B8] rounded-[28px] sm:rounded-[32px] p-6 sm:p-8 text-white relative overflow-hidden cursor-pointer group shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
           >
-            <div className="relative z-10 h-full flex flex-col justify-between min-h-[280px]">
+            <div className="relative z-10 h-full flex flex-col justify-between min-h-[240px] sm:min-h-[280px]">
               <div>
                 <h2 className="text-3xl font-black mb-3 leading-snug">실전 CBT<br/>모의고사</h2>
                 <p className="text-blue-100 font-medium text-sm leading-relaxed">CertiMate에서 기출문제를<br/>더 완벽하게 준비하세요!</p>
               </div>
-              <div className="space-y-3 mt-8">
+              <div className="space-y-3 mt-6 sm:mt-8">
                 <button 
                   onClick={(e) => {
                     e.stopPropagation()
@@ -65,14 +65,14 @@ const HomePage = () => {
           </div>
 
           {/* Box 2 (Middle, Col-3) - Stacked Cards */}
-          <div className="md:col-span-3 flex flex-col gap-6">
+          <div className="md:col-span-3 grid grid-cols-2 gap-4 sm:gap-6 md:flex md:flex-col">
             {/* Top - Calendar */}
-            <div 
+            <div
               onClick={() => handleNav('/calendar')}
-              className="flex-1 bg-[#3BAA7D] rounded-[32px] p-7 text-white cursor-pointer group shadow-md hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col justify-between relative overflow-hidden"
+              className="flex-1 bg-[#3BAA7D] rounded-[28px] sm:rounded-[32px] p-5 sm:p-7 text-white cursor-pointer group shadow-md hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col justify-between relative overflow-hidden"
             >
               <div>
-                <h3 className="text-xl font-black mb-1">시험 일정 캘린더</h3>
+                <h3 className="text-lg sm:text-xl font-black mb-1 break-keep">시험 일정 캘린더</h3>
                 <p className="text-green-100 text-xs font-medium">놓치기 쉬운 일정 한눈에</p>
               </div>
               <div className="flex justify-between items-end mt-6">
@@ -83,10 +83,10 @@ const HomePage = () => {
             {/* Bottom - My Progress */}
             <div 
               onClick={() => handleNav('/profile')}
-              className="flex-1 bg-[#D9A23A] rounded-[32px] p-7 text-white cursor-pointer group shadow-md hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col justify-between relative overflow-hidden"
+              className="flex-1 bg-[#D9A23A] rounded-[28px] sm:rounded-[32px] p-5 sm:p-7 text-white cursor-pointer group shadow-md hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col justify-between relative overflow-hidden"
             >
               <div>
-                <h3 className="text-xl font-black mb-1">내 학습 진도</h3>
+                <h3 className="text-lg sm:text-xl font-black mb-1 break-keep">내 학습 진도</h3>
                 <p className="text-yellow-100 text-xs font-medium">합격을 향한 발자취</p>
               </div>
               <div className="flex justify-between items-end mt-6">
@@ -97,38 +97,38 @@ const HomePage = () => {
           </div>
 
           {/* Box 3 (Right-Middle, Col-3) - Stacked White Cards */}
-          <div className="md:col-span-3 flex flex-col gap-6">
-            <div 
+          <div className="md:col-span-3 grid grid-cols-2 gap-4 sm:gap-6 md:flex md:flex-col">
+            <div
               onClick={() => handleNav('/community')}
-              className="flex-1 bg-white rounded-[32px] border border-gray-100 p-7 cursor-pointer group shadow-sm hover:shadow-md transition-all hover:-translate-y-1 flex flex-col justify-between relative"
+              className="flex-1 bg-white rounded-[28px] sm:rounded-[32px] border border-gray-100 p-5 sm:p-7 cursor-pointer group shadow-sm hover:shadow-md transition-all hover:-translate-y-1 flex flex-col justify-between relative"
             >
               <div>
-                <h3 className="text-lg font-black text-slate-800 mb-1">합격 후기 게시판</h3>
+                <h3 className="text-base sm:text-lg font-black text-slate-800 mb-1 break-keep">합격 후기 게시판</h3>
                 <div className="flex flex-col gap-1 mt-4">
                   <span className="text-xs text-gray-500 font-medium flex items-center hover:text-[#3478B8]">선배들의 공부법 <ArrowRight size={10} className="ml-1"/></span>
                   <span className="text-xs text-gray-500 font-medium flex items-center hover:text-[#3478B8]">생생한 합격수기 <ArrowRight size={10} className="ml-1"/></span>
                 </div>
               </div>
-              <MessageSquare className="absolute bottom-6 right-6 w-10 h-10 text-gray-100 group-hover:text-[#3478B8] transition-colors" strokeWidth={1.5} />
+              <MessageSquare className="hidden md:block absolute bottom-6 right-6 w-10 h-10 text-gray-100 group-hover:text-[#3478B8] transition-colors" strokeWidth={1.5} />
             </div>
 
             <div 
               onClick={() => handleNav('/recommend')}
-              className="flex-1 bg-white rounded-[32px] border border-gray-100 p-7 cursor-pointer group shadow-sm hover:shadow-md transition-all hover:-translate-y-1 flex flex-col justify-between relative"
+              className="flex-1 bg-white rounded-[28px] sm:rounded-[32px] border border-gray-100 p-5 sm:p-7 cursor-pointer group shadow-sm hover:shadow-md transition-all hover:-translate-y-1 flex flex-col justify-between relative"
             >
               <div>
-                <h3 className="text-lg font-black text-slate-800 mb-1">추천 자격증 종목</h3>
+                <h3 className="text-base sm:text-lg font-black text-slate-800 mb-1 break-keep">추천 자격증 종목</h3>
                 <div className="flex flex-col gap-1 mt-4">
                   <span className="text-xs text-gray-500 font-medium flex items-center hover:text-[#3BAA7D]">IT 자격증 정보 <ArrowRight size={10} className="ml-1"/></span>
                   <span className="text-xs text-gray-500 font-medium flex items-center hover:text-[#3BAA7D]">국가공인 자격증 <ArrowRight size={10} className="ml-1"/></span>
                 </div>
               </div>
-              <Info className="absolute bottom-6 right-6 w-10 h-10 text-gray-100 group-hover:text-[#3BAA7D] transition-colors" strokeWidth={1.5} />
+              <Info className="hidden md:block absolute bottom-6 right-6 w-10 h-10 text-gray-100 group-hover:text-[#3BAA7D] transition-colors" strokeWidth={1.5} />
             </div>
           </div>
 
           {/* Box 4 (Right-most, Col-2) - Notice / Ranking List */}
-          <div className="md:col-span-2 bg-white rounded-[32px] border border-gray-100 p-6 shadow-sm flex flex-col">
+          <div className="md:col-span-2 bg-white rounded-[28px] sm:rounded-[32px] border border-gray-100 p-6 shadow-sm flex flex-col">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-base font-black text-slate-800">인기 자격증</h3>
               <span className="text-gray-400 cursor-pointer hover:text-slate-800">+</span>
@@ -154,7 +154,7 @@ const HomePage = () => {
         </div>
 
         {/* Bottom Horizontal Quick Links */}
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm px-8 py-6 flex flex-wrap justify-center sm:justify-between items-center gap-6">
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm px-4 sm:px-8 py-6 grid grid-cols-4 gap-y-6 sm:flex sm:flex-wrap sm:justify-between sm:items-center sm:gap-6">
           <QuickLink icon={<Calendar />} label="시험일정" onClick={() => handleNav('/calendar')} />
           <QuickLink icon={<BookOpen />} label="모의고사" onClick={() => handleNav('/study')} />
           <QuickLink icon={<Briefcase />} label="취업연계" onClick={() => handleNav('/jobs')} />
@@ -171,7 +171,7 @@ const HomePage = () => {
 }
 
 const QuickLink = ({ icon, label, onClick }) => (
-  <div onClick={onClick} className="flex flex-col items-center gap-3 cursor-pointer group min-w-[70px]">
+  <div onClick={onClick} className="flex flex-col items-center gap-3 cursor-pointer group sm:min-w-[70px]">
     <div className="text-gray-400 group-hover:text-[#3478B8] transition-colors">
       {icon}
     </div>
