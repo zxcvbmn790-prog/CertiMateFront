@@ -18,8 +18,8 @@ const FindPasswordPage = () => {
   }
 
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-[#EAECEF] flex items-center justify-center py-12 px-6">
-      <div className="max-w-md w-full bg-white rounded-[32px] shadow-2xl overflow-hidden border border-gray-100">
+    <div className="min-h-[calc(100vh-80px)] bg-[#EAECEF] flex items-center justify-center py-8 sm:py-12 px-4 sm:px-6">
+      <div className="max-w-md w-full bg-white rounded-[28px] sm:rounded-[32px] shadow-2xl overflow-hidden border border-gray-100">
         <div className="p-8 text-center mt-4">
           <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <Lock size={32} className="text-[#3478B8]" />
@@ -28,7 +28,7 @@ const FindPasswordPage = () => {
           <p className="text-gray-400 text-xs mt-2 font-medium">가입하신 이메일 주소를 입력하시면<br/>임시 비밀번호를 보내드립니다.</p>
         </div>
 
-        <div className="px-10 pb-10 space-y-6">
+        <div className="px-6 sm:px-10 pb-8 sm:pb-10 space-y-6">
           <form className="space-y-4" onSubmit={handleFindPassword}>
             <div className="space-y-2">
               <label className="text-[10px] font-black text-gray-400 uppercase ml-1 tracking-widest">Email Address</label>

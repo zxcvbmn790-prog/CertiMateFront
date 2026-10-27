@@ -69,35 +69,35 @@ const ExamLocationsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#EAECEF] font-sans text-[#4A4F58] py-10 px-6">
+    <div className="min-h-screen bg-[#EAECEF] font-sans text-[#4A4F58] py-6 md:py-10 px-4 md:px-6">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-black mb-2 flex items-center">
-            <MapPin className="mr-2 text-[#3478B8]" size={30} /> 시험장 찾기
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-4xl font-black mb-2 flex items-center">
+            <MapPin className="mr-2 text-[#3478B8] w-7 h-7 md:w-[30px] md:h-[30px]" /> 시험장 찾기
           </h1>
-          <p className="text-gray-400 font-medium">가까운 시험장을 찾거나 지역·이름으로 검색하세요.</p>
+          <p className="text-sm md:text-base text-gray-400 font-medium">가까운 시험장을 찾거나 지역·이름으로 검색하세요.</p>
         </div>
 
         {/* 검색 + 내 주변 */}
-        <div className="flex flex-col md:flex-row gap-3 mb-6">
-          <form onSubmit={handleSearch} className="flex-1 relative">
+        <div className="grid grid-cols-2 md:flex md:flex-row gap-3 mb-6">
+          <form onSubmit={handleSearch} className="col-span-2 md:flex-1 relative">
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="지역이나 시험장 이름 검색 (예: 강남, 공단, 대학교)"
+              placeholder="지역·시험장 검색 (예: 강남, 대학교)"
               className="w-full p-4 pl-12 rounded-2xl border border-gray-200 outline-none focus:border-[#3478B8] font-medium bg-white"
             />
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
           </form>
           <button
             onClick={handleSearch}
-            className="px-6 py-4 rounded-2xl bg-[#3478B8] text-white font-black hover:bg-[#2e69a3] transition"
+            className="px-6 py-3.5 md:py-4 rounded-2xl bg-[#3478B8] text-white font-black hover:bg-[#2e69a3] transition"
           >
             검색
           </button>
           <button
             onClick={handleNearby}
-            className="px-6 py-4 rounded-2xl bg-[#3BAA7D] text-white font-black hover:bg-[#31926b] transition flex items-center justify-center"
+            className="px-4 md:px-6 py-3.5 md:py-4 rounded-2xl bg-[#3BAA7D] text-white font-black hover:bg-[#31926b] transition flex items-center justify-center"
           >
             <Navigation size={18} className="mr-2" /> 내 주변 찾기
           </button>
@@ -110,7 +110,7 @@ const ExamLocationsPage = () => {
           <ExamLocationsMap locations={locations} selectedId={selectedId} />
 
           {/* 목록 */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 max-h-[420px] overflow-y-auto">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 min-h-[160px] max-h-[420px] overflow-y-auto">
             {loading ? (
               <div className="h-full flex items-center justify-center text-gray-400">
                 <Loader2 className="animate-spin mr-2" size={20} /> 불러오는 중...

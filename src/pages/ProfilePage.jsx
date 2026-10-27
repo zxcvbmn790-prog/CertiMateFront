@@ -240,7 +240,7 @@ const ProfilePage = () => {
         <div
           key={localISOTime}
           onClick={() => handleHeatmapClick(localISOTime, count)}
-          className={`w-3.5 h-3.5 rounded-sm ${bg} transition-all ${count > 0 ? 'cursor-pointer hover:ring-2 hover:ring-[#4A4F58]' : ''}`}
+          className={`w-4 h-4 md:w-3.5 md:h-3.5 rounded-sm ${bg} transition-all ${count > 0 ? 'cursor-pointer hover:ring-2 hover:ring-[#4A4F58]' : ''}`}
           title={`${localISOTime}: ${count} 문제 풀이${count > 0 ? ' (클릭하여 보기)' : ''}`}
         />
       )
@@ -253,15 +253,15 @@ const ProfilePage = () => {
     if (modalState.sessions.length === 0) return <div className="p-10 text-center text-gray-400 font-bold">기록이 없습니다.</div>
 
     return (
-      <div className="p-6 space-y-4">
+      <div className="p-4 md:p-6 space-y-4">
         <h3 className="text-sm font-black text-gray-400 uppercase mb-4 tracking-widest">해당 날짜의 학습 회차</h3>
         {modalState.sessions.map((session, idx) => (
-          <div key={idx} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row justify-between md:items-center gap-4">
+          <div key={idx} className="bg-white border border-gray-100 rounded-2xl p-5 md:p-6 shadow-sm flex flex-col md:flex-row justify-between md:items-center gap-4">
             <div>
               <h4 className="text-lg font-black text-[#4A4F58]">{session.sessionNum}회차 학습</h4>
               <p className="text-sm text-gray-500 font-bold mt-1">{session.timeLabel} • 총 {session.records.length}문제</p>
             </div>
-            <div className="flex space-x-3">
+            <div className="grid grid-cols-2 gap-2 md:flex md:gap-3">
               <button onClick={() => openNotes(idx)} className="px-5 py-3 bg-[#3BAA7D]/10 text-[#3BAA7D] font-black rounded-xl hover:bg-[#3BAA7D]/20 transition text-sm">
                 오답 노트
               </button>
@@ -290,13 +290,13 @@ const ProfilePage = () => {
       `}</style>
 
       {/* 헤더 및 스탯 */}
-      <header className="bg-white border-b border-gray-200 pt-16 pb-12 px-6">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-10">
+      <header className="bg-white border-b border-gray-200 pt-8 md:pt-16 pb-8 md:pb-12 px-4 md:px-6">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-5 md:gap-10">
           <div className="relative group">
             {userInfo.profileImage ? (
-              <img src={userInfo.profileImage} alt="Profile" className="w-32 h-32 rounded-[40px] object-cover shadow-2xl" />
+              <img src={userInfo.profileImage} alt="Profile" className="w-24 h-24 md:w-32 md:h-32 rounded-[32px] md:rounded-[40px] object-cover shadow-2xl" />
             ) : (
-              <div className="w-32 h-32 rounded-[40px] bg-gradient-to-tr from-[#3478B8] to-[#3BAA7D] flex items-center justify-center text-white text-4xl font-black shadow-2xl">
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-[32px] md:rounded-[40px] bg-gradient-to-tr from-[#3478B8] to-[#3BAA7D] flex items-center justify-center text-white text-4xl font-black shadow-2xl">
                 {userInfo.name ? userInfo.name[0] : ''}
               </div>
             )}
@@ -306,10 +306,10 @@ const ProfilePage = () => {
             </label>
           </div>
           <div className="flex-1 text-center md:text-left">
-            <h2 className="text-3xl font-black text-[#4A4F58] mb-2">{userInfo.name}</h2>
-            <p className="text-[#3BAA7D] font-bold text-sm mb-4">{userInfo.university} | {userInfo.major}</p>
+            <h2 className="text-2xl md:text-3xl font-black text-[#4A4F58] mb-2">{userInfo.name}</h2>
+            <p className="text-[#3BAA7D] font-bold text-sm md:mb-4">{userInfo.university} | {userInfo.major}</p>
           </div>
-          <div className="flex space-x-4 no-print relative">
+          <div className="flex space-x-3 md:space-x-4 no-print relative">
             <button onClick={() => window.print()} className="p-4 bg-white border border-gray-200 rounded-2xl shadow-sm text-gray-400 hover:text-[#3BAA7D]"><Download size={20} /></button>
             <button className="p-4 bg-white border border-gray-200 rounded-2xl shadow-sm text-gray-400"><Bell size={20} /></button>
 
@@ -317,7 +317,7 @@ const ProfilePage = () => {
             <div className="relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="px-6 py-4 bg-[#3478B8] text-white rounded-2xl font-black text-sm shadow-xl flex items-center hover:bg-[#2e69a3] transition"
+                className="px-5 md:px-6 py-4 bg-[#3478B8] text-white rounded-2xl font-black text-sm shadow-xl flex items-center whitespace-nowrap hover:bg-[#2e69a3] transition"
               >
                 개인정보관리 <ChevronDown size={16} className="ml-2" />
               </button>
@@ -341,20 +341,20 @@ const ProfilePage = () => {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 mt-12 space-y-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <main className="max-w-5xl mx-auto px-4 md:px-6 mt-6 md:mt-12 space-y-6 md:space-y-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
           <StatCard icon={<Award className="text-[#3478B8]" />} label="보유 자격증" value={dashboard.certCount} />
           <StatCard icon={<Bookmark className="text-[#D9A23A]" />} label="스크랩 종목" value={dashboard.scrapCount} />
           <StatCard icon={<PieChart className="text-[#3BAA7D]" />} label="CBT 평균 정답률" value={dashboard.cbtAccuracy} expandableData={dashboard.certStats?.map(s => ({ name: s.certName, value: s.accuracy }))} />
           <StatCard icon={<Clock className="text-gray-400" />} label="총 학습 시간" value={dashboard.totalStudyTime} expandableData={dashboard.certStats?.map(s => ({ name: s.certName, value: s.studyTime }))} />
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
           {/* 좌측 메인 영역 (70%) */}
           <div className="lg:col-span-2 space-y-6">
             <section 
               id="wrong-notes-section" 
-              className={`bg-white p-8 rounded-[32px] border transition-all duration-500 shadow-sm ${highlightNotes ? 'ring-4 ring-[#3478B8]/40 border-[#3478B8]' : 'border-gray-100'}`}
+              className={`bg-white p-5 md:p-8 rounded-[24px] md:rounded-[32px] border transition-all duration-500 shadow-sm ${highlightNotes ? 'ring-4 ring-[#3478B8]/40 border-[#3478B8]' : 'border-gray-100'}`}
             >
               <h3 className="text-lg font-black mb-2 flex items-center text-[#4A4F58]">문제 풀이 기록</h3>
               <p className="text-xs text-gray-400 font-bold mb-4">잔디를 클릭하면 해당일의 오답노트와 다시 풀기를 할 수 있습니다.</p>
@@ -362,7 +362,7 @@ const ProfilePage = () => {
             </section>
 
             {/* 성적 변화 추이 그래프 */}
-            <section className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
+            <section className="bg-white p-5 md:p-8 rounded-[24px] md:rounded-[32px] border border-gray-100 shadow-sm">
               <h3 className="text-lg font-black mb-6 flex items-center text-[#4A4F58]">
                 성적 요약
               </h3>
@@ -376,18 +376,18 @@ const ProfilePage = () => {
             </section>
 
             {/* 커뮤니티 활동 (내가 쓴 글 & 좋아요 누른 글) */}
-            <section className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
+            <section className="bg-white p-5 md:p-8 rounded-[24px] md:rounded-[32px] border border-gray-100 shadow-sm">
               <h3 className="text-lg font-black mb-6 flex items-center text-[#4A4F58]">
                 <BookOpen className="mr-3 text-[#3478B8]" size={20} /> 커뮤니티 활동
               </h3>
               <div className="flex border-b border-gray-200 mb-6">
                 <button
                   onClick={() => setActiveTab('my-posts')}
-                  className={`px-6 py-3 font-bold text-sm transition ${activeTab === 'my-posts' ? 'border-b-2 border-[#3478B8] text-[#3478B8]' : 'text-gray-400 hover:text-gray-600'}`}
+                  className={`flex-1 sm:flex-none px-4 md:px-6 py-3 font-bold text-sm transition ${activeTab === 'my-posts' ? 'border-b-2 border-[#3478B8] text-[#3478B8]' : 'text-gray-400 hover:text-gray-600'}`}
                 >내가 쓴 글</button>
                 <button
                   onClick={() => setActiveTab('liked-posts')}
-                  className={`px-6 py-3 font-bold text-sm transition ${activeTab === 'liked-posts' ? 'border-b-2 border-[#3478B8] text-[#3478B8]' : 'text-gray-400 hover:text-gray-600'}`}
+                  className={`flex-1 sm:flex-none px-4 md:px-6 py-3 font-bold text-sm transition ${activeTab === 'liked-posts' ? 'border-b-2 border-[#3478B8] text-[#3478B8]' : 'text-gray-400 hover:text-gray-600'}`}
                 >좋아요 한 글</button>
               </div>
               <div className="grid grid-cols-1 gap-4">
@@ -438,7 +438,7 @@ const ProfilePage = () => {
 
           {/* 우측 사이드 영역 (30%) */}
           <div className="space-y-6">
-            <section className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
+            <section className="bg-white p-5 md:p-8 rounded-[24px] md:rounded-[32px] border border-gray-100 shadow-sm">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-base font-black flex items-center text-[#4A4F58] whitespace-nowrap mr-2">
                   <Calendar className="mr-2 text-[#3478B8] shrink-0" size={18} /> 준비 중인 시험
@@ -450,7 +450,7 @@ const ProfilePage = () => {
               {dashboard.targetExams && dashboard.targetExams.length > 0 ? (
                 <div className="space-y-4">
                   {dashboard.targetExams.map(exam => (
-                    <div key={exam.id} className="p-6 bg-[#3478B8]/5 border border-[#3478B8]/20 rounded-2xl group">
+                    <div key={exam.id} className="p-5 md:p-6 bg-[#3478B8]/5 border border-[#3478B8]/20 rounded-2xl group">
                       <div className="flex justify-between items-start mb-4 gap-2">
                         <div className="flex items-center space-x-3 min-w-0 flex-1">
                           <div className="w-1.5 h-10 bg-[#D9A23A] rounded-full shrink-0"></div>
@@ -460,7 +460,7 @@ const ProfilePage = () => {
                           </div>
                         </div>
                         <div className="text-right flex flex-col items-end shrink-0 pl-2 border-l border-gray-200">
-                          <button onClick={() => handleDeleteSchedule(exam.id)} className="text-gray-300 hover:text-red-500 mb-1 transition opacity-0 group-hover:opacity-100" title="일정 삭제"><Trash2 size={14} /></button>
+                          <button onClick={() => handleDeleteSchedule(exam.id)} className="text-gray-300 hover:text-red-500 mb-1 transition md:opacity-0 md:group-hover:opacity-100" title="일정 삭제"><Trash2 size={14} /></button>
                           <span className="text-xl font-black text-[#D9A23A] whitespace-nowrap leading-none mt-1">{exam.dDay <= 0 ? 'D-Day' : `D-${exam.dDay}`}</span>
                         </div>
                       </div>
@@ -474,7 +474,7 @@ const ProfilePage = () => {
               )}
             </section>
 
-            <section className="bg-[#4A4F58] p-8 rounded-[32px] text-white shadow-xl">
+            <section className="bg-[#4A4F58] p-6 md:p-8 rounded-[24px] md:rounded-[32px] text-white shadow-xl">
               <h3 className="text-lg font-bold mb-6 flex items-center"><Bookmark className="mr-3 text-[#D9A23A]" size={18} /> 최근 스크랩</h3>
               <div className="space-y-4">
                 {dashboard.recentScraps?.length > 0 ? dashboard.recentScraps.map(s => <ScrapItem key={s.id} title={s.title} date="스크랩됨" />) : <p className="text-sm text-gray-400">없음</p>}
@@ -488,8 +488,8 @@ const ProfilePage = () => {
       {modalState.isOpen && (
         <div className="no-print fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-[#EAECEF] rounded-[32px] w-full max-w-xl shadow-2xl relative flex flex-col overflow-hidden">
-            <div className="bg-white px-8 py-6 border-b border-gray-200 flex justify-between items-center z-10 shrink-0">
-              <h2 className="text-2xl font-black text-[#4A4F58]">{modalState.date} 학습 기록</h2>
+            <div className="bg-white px-5 md:px-8 py-5 md:py-6 border-b border-gray-200 flex justify-between items-center gap-3 z-10 shrink-0">
+              <h2 className="text-lg md:text-2xl font-black text-[#4A4F58]">{modalState.date} 학습 기록</h2>
               <button onClick={() => setModalState({ isOpen: false, view: 'sessions', sessions: [], selectedSessionIdx: null, loading: false })} className="text-gray-400 hover:text-gray-600 bg-gray-50 p-2 rounded-full">
                 <X size={20} />
               </button>
@@ -504,7 +504,7 @@ const ProfilePage = () => {
       {/* 정보 수정 모달 */}
       {isEditModalOpen && (
         <div className="no-print fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-[32px] p-8 w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+          <div className="bg-white rounded-[24px] md:rounded-[32px] p-6 md:p-8 w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto custom-scrollbar">
             <button onClick={() => setIsEditModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-600"><X size={24} /></button>
             <h2 className="text-2xl font-black text-[#4A4F58] mb-6">정보 수정</h2>
             <form onSubmit={(e) => { e.preventDefault(); handleEditSubmit(); setIsEditModalOpen(false) }} className="space-y-4">
@@ -574,7 +574,7 @@ const ProfilePage = () => {
       {/* 시험 일정 추가 모달 */}
       {isAddScheduleModalOpen && (
         <div className="no-print fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-[32px] p-8 w-full max-w-md shadow-2xl relative">
+          <div className="bg-white rounded-[24px] md:rounded-[32px] p-6 md:p-8 w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto custom-scrollbar">
             <button onClick={() => setIsAddScheduleModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-600"><X size={24} /></button>
             <h2 className="text-2xl font-black text-[#4A4F58] mb-6">시험 일정 추가</h2>
             <form onSubmit={handleAddSchedule} className="space-y-4 text-left">
@@ -634,7 +634,7 @@ const ProfilePage = () => {
 const StatCard = ({ icon, label, value, expandableData }) => {
   const [expanded, setExpanded] = useState(false);
   return (
-    <div className="bg-white p-6 rounded-[28px] border border-gray-100 text-center shadow-sm relative transition-all">
+    <div className="bg-white p-4 md:p-6 rounded-[24px] md:rounded-[28px] border border-gray-100 text-center shadow-sm relative transition-all">
       <div className="flex justify-center mb-3 cursor-pointer" onClick={() => expandableData?.length > 0 && setExpanded(!expanded)}>
         {icon}
       </div>
@@ -667,7 +667,7 @@ const CertTrendChart = ({ certTrends }) => {
   const data = activeTrend?.trendData || [];
 
   return (
-    <div className="flex flex-col h-[350px]">
+    <div className="flex flex-col h-[280px] md:h-[350px]">
       <div className="flex space-x-2 mb-6 border-b border-gray-100 pb-2 overflow-x-auto custom-scrollbar">
         {certTrends.map(t => (
           <button

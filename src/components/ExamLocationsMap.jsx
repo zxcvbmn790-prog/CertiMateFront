@@ -69,7 +69,7 @@ const ExamLocationsMap = ({ locations, selectedId }) => {
 
   if (!kakaoReady) {
     return (
-      <div className="w-full h-[420px] rounded-2xl border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-center px-6">
+      <div className="w-full h-[260px] md:h-[420px] rounded-2xl border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-center px-6">
         <p className="text-sm text-gray-400 font-medium">
           🗺️ 지도를 보려면 카카오맵 키가 필요합니다.<br />
           <span className="text-xs">(VITE_KAKAO_JS_KEY 설정 시 표시됩니다. 목록/검색은 지금도 사용 가능)</span>
@@ -78,7 +78,7 @@ const ExamLocationsMap = ({ locations, selectedId }) => {
     )
   }
 
-  return <div ref={mapContainer} className="w-full h-[420px] rounded-2xl border border-gray-200 shadow-sm" />
+  return <div ref={mapContainer} className="w-full h-[300px] md:h-[420px] rounded-2xl border border-gray-200 shadow-sm" />
 }
 
 export default ExamLocationsMap

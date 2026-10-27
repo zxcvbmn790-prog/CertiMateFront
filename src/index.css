@@ -2,10 +2,23 @@
 
 body {
   margin: 0;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
 }
 
 #root {
   min-height: 100svh;
   display: flex;
   flex-direction: column;
+  /* 모바일에서 넘치는 요소 때문에 화면이 좌우로 밀리지 않도록 */
+  overflow-x: clip;
+}
+
+/* iOS Safari는 16px 미만 입력창에 포커스하면 화면을 확대하므로 모바일에서만 16px로 고정 */
+@media (max-width: 639px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }
