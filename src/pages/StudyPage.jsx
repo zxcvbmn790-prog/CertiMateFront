@@ -9,6 +9,9 @@ import { authApi } from '../api/authApi'
 // 채점 비교는 반드시 이 함수 하나만 쓴다 (점수 계산·OMR·정답 배지·오답노트 저장 공통).
 import { isCorrectAnswer } from '../utils/grading'
 
+const LOGIN_REQUIRED_MSG = 'AI 해설은 로그인 후 이용할 수 있어요.'
+const isAuthError = (error) => [401, 403].includes(error?.response?.status)
+
 const StudyPage = () => {
   const location = useLocation()
   const [userName, setUserName] = useState('')
@@ -223,8 +226,16 @@ const StudyPage = () => {
     }
   }
 
+  // AI 해설 생성·신고는 서버에서 로그인 필수 (무료 한도 보호). 토큰 만료는 401/403으로 온다.
+  const requireLogin = () => {
+    if (localStorage.getItem('isLoggedIn') === 'true') return true
+    alert(LOGIN_REQUIRED_MSG)
+    return false
+  }
+
   // 온디맨드: 해설 없는 문제에 대해 이 문제만 AI 해설 생성 (생성 결과는 서버가 DB에 영구 저장)
   const generateExplanation = async (learnId) => {
+    if (!requireLogin()) return
     setExplainingId(learnId)
     try {
       const res = await examApi.generateExplanations([learnId])
@@ -234,6 +245,7 @@ const StudyPage = () => {
         : q)))
     } catch (error) {
       console.error('AI 해설 생성 실패:', error)
+      if (isAuthError(error)) return alert(LOGIN_REQUIRED_MSG)
       alert('AI 해설 생성에 실패했습니다. (서버의 GEMINI_API_KEY 설정 또는 무료 한도를 확인하세요)')
     } finally {
       setExplainingId(null)
@@ -242,12 +254,14 @@ const StudyPage = () => {
 
   // AI 해설 신고 → 서버에서 제거되고, 화면에서도 숨겨 다시 생성 가능하게 한다
   const reportExplanation = async (learnId) => {
+    if (!requireLogin()) return
     if (!window.confirm('이 해설이 부정확한가요? 신고하면 숨겨지고 다시 생성할 수 있습니다.')) return
     try {
       await examApi.reportExplanation(learnId)
       setQuestions(prev => prev.map(q => (q.learnId === learnId ? { ...q, explanation: '', explanationAi: false } : q)))
     } catch (error) {
       console.error('해설 신고 실패:', error)
+      if (isAuthError(error)) return alert(LOGIN_REQUIRED_MSG)
       alert('신고 처리에 실패했습니다.')
     }
   }
