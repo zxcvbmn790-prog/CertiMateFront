@@ -62,6 +62,11 @@ function Header() {
             <div className="hidden sm:flex items-center gap-1">
               <Link to="/study" className="text-sm font-medium text-slate-600 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-50 transition">모의고사</Link>
               <Link to="/exam-locations" className="text-sm font-medium text-slate-600 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-50 transition">시험장 찾기</Link>
+              <Link to="/jobs" className="text-sm font-bold text-[#3478B8] hover:text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-50/60 transition flex items-center gap-1">
+                취업 연계
+                <span className="text-[10px] font-black bg-[#3BAA7D] text-white px-1.5 py-0.5 rounded-full">LIVE</span>
+              </Link>
+              <Link to="/cover-letter" className="text-sm font-medium text-slate-600 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-50 transition">자기소개서</Link>
             </div>
           </div>
 

@@ -1,5 +1,6 @@
 import RecommendationPage from '../pages/RecommendationPage';
 import CoverLetterPage from '../pages/CoverLetterPage';
+import JobMatchingPage from '../pages/JobMatchingPage';
 import { Route, Routes } from 'react-router-dom'
 import HomePage from '../pages/HomePage'
 import StudyPage from '../pages/StudyPage'
@@ -32,6 +33,7 @@ function AppRouter() {
       <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
       <Route path="/recommend" element={<RecommendationPage />} />
       <Route path="/cover-letter" element={<CoverLetterPage />} />
+      <Route path="/jobs" element={<JobMatchingPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )

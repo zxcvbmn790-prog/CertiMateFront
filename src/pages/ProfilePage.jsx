@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { authApi } from '../api/authApi'
 import { userApi } from '../api/userApi'
 import { communityApi } from '../api/communityApi'
+import CertManagerModal from '../components/common/CertManagerModal'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts'
 import {
   User, Award, BookOpen, Bookmark,
@@ -48,13 +49,15 @@ const ProfilePage = () => {
     heatmapData: [],
     targetExams: [],
     certStats: [],
-    allCertifications: []
+    allCertifications: [],
+    acquiredCertifications: []
   })
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
   const [isAddScheduleModalOpen, setIsAddScheduleModalOpen] = useState(false)
+  const [isCertManagerOpen, setIsCertManagerOpen] = useState(false)
   const [scheduleForm, setScheduleForm] = useState({ certId: '', examType: '필기', examDate: '', targetReadCount: 3 })
 
   const [myPosts, setMyPosts] = useState([])
@@ -185,6 +188,36 @@ const ProfilePage = () => {
       .catch(err => {
         console.error(err);
         alert('삭제에 실패했습니다.');
+      });
+  }
+
+  const handleDeleteAcquired = (id, name) => {
+    if (!window.confirm(`'${name}' 보유 자격증을 삭제하시겠습니까?`)) return;
+    userApi.deleteAcquiredCertification(id)
+      .then(() => {
+        fetchData();
+      })
+      .catch(err => {
+        console.error(err);
+        alert('삭제에 실패했습니다.');
+      });
+  }
+
+  const handlePromoteToAcquired = (exam) => {
+    if (!window.confirm(`축하합니다! 🎉 '${exam.certName}' 시험을 합격(취득 완료) 처리하여 보유 자격증으로 전환하시겠습니까?`)) return;
+    const todayStr = new Date().toISOString().split('T')[0];
+    userApi.addAcquiredCertification({
+      certId: exam.certId,
+      certName: exam.certName,
+      acquiredDate: todayStr,
+      fromScheduleId: exam.id
+    })
+      .then(() => {
+        fetchData();
+      })
+      .catch(err => {
+        console.error(err);
+        alert('합격 전환 처리에 실패했습니다.');
       });
   }
 
@@ -343,7 +376,12 @@ const ProfilePage = () => {
 
       <main className="max-w-5xl mx-auto px-6 mt-12 space-y-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <StatCard icon={<Award className="text-[#3478B8]" />} label="보유 자격증" value={dashboard.certCount} />
+          <StatCard
+            icon={<Award className="text-[#3478B8]" />}
+            label="보유 자격증"
+            value={dashboard.certCount}
+            expandableData={dashboard.acquiredCertifications?.map(c => ({ name: c.certName, value: c.acquiredDate }))}
+          />
           <StatCard icon={<Bookmark className="text-[#D9A23A]" />} label="스크랩 종목" value={dashboard.scrapCount} />
           <StatCard icon={<PieChart className="text-[#3BAA7D]" />} label="CBT 평균 정답률" value={dashboard.cbtAccuracy} expandableData={dashboard.certStats?.map(s => ({ name: s.certName, value: s.accuracy }))} />
           <StatCard icon={<Clock className="text-gray-400" />} label="총 학습 시간" value={dashboard.totalStudyTime} expandableData={dashboard.certStats?.map(s => ({ name: s.certName, value: s.studyTime }))} />
@@ -438,40 +476,103 @@ const ProfilePage = () => {
 
           {/* 우측 사이드 영역 (30%) */}
           <div className="space-y-6">
-            <section className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-base font-black flex items-center text-[#4A4F58] whitespace-nowrap mr-2">
-                  <Calendar className="mr-2 text-[#3478B8] shrink-0" size={18} /> 준비 중인 시험
+            <section className="bg-white p-7 rounded-[32px] border border-gray-100 shadow-sm">
+              <div className="flex justify-between items-center mb-5 pb-4 border-b border-gray-100">
+                <h3 className="text-base font-black flex items-center text-[#4A4F58] whitespace-nowrap">
+                  <Award className="mr-2 text-[#3478B8] shrink-0" size={18} /> 내 보유 · 목표 자격증
                 </h3>
-                <button onClick={() => setIsAddScheduleModalOpen(true)} className="shrink-0 whitespace-nowrap text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-full font-bold transition">
-                  + 추가
-                </button>
               </div>
-              {dashboard.targetExams && dashboard.targetExams.length > 0 ? (
-                <div className="space-y-4">
-                  {dashboard.targetExams.map(exam => (
-                    <div key={exam.id} className="p-6 bg-[#3478B8]/5 border border-[#3478B8]/20 rounded-2xl group">
-                      <div className="flex justify-between items-start mb-4 gap-2">
-                        <div className="flex items-center space-x-3 min-w-0 flex-1">
-                          <div className="w-1.5 h-10 bg-[#D9A23A] rounded-full shrink-0"></div>
-                          <div className="text-left min-w-0 pr-2">
-                            <h4 className="font-bold text-[#4A4F58] truncate" title={`${exam.certName} (${exam.examType})`}>{exam.certName} ({exam.examType})</h4>
-                            <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase">Exam: {exam.examDate}</p>
+
+              {/* 1. 보유 자격증 영역 */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-black text-[#3BAA7D] flex items-center gap-1">
+                    <CheckCircle2 size={14} /> 보유 자격증 ({dashboard.acquiredCertifications?.length || 0})
+                  </span>
+                  <button
+                    onClick={() => setIsCertManagerOpen(true)}
+                    className="text-[11px] font-bold text-gray-400 hover:text-[#3BAA7D]"
+                  >
+                    + 추가
+                  </button>
+                </div>
+                {dashboard.acquiredCertifications && dashboard.acquiredCertifications.length > 0 ? (
+                  <div className="space-y-2">
+                    {dashboard.acquiredCertifications.map(cert => (
+                      <div key={cert.id} className="px-4 py-3 bg-[#3BAA7D]/5 border border-[#3BAA7D]/20 rounded-2xl flex items-center justify-between gap-2 group">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-black bg-[#3BAA7D] text-white px-2 py-0.5 rounded-full shrink-0">보유</span>
+                            <h4 className="text-sm font-black text-[#4A4F58] truncate" title={cert.certName}>{cert.certName}</h4>
+                          </div>
+                          <p className="text-[10px] text-gray-400 font-bold mt-0.5">취득일: {cert.acquiredDate}</p>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteAcquired(cert.id, cert.certName)}
+                          className="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100 shrink-0"
+                          title="보유 자격증 삭제"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 bg-gray-50 border border-gray-100 rounded-2xl text-center text-gray-400 font-bold text-xs">
+                    등록된 보유 자격증이 없습니다.
+                  </div>
+                )}
+              </div>
+
+              {/* 2. 목표 시험(준비 중인 시험) 영역 */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-black text-[#3478B8] flex items-center gap-1">
+                    <Calendar size={14} /> 목표 자격증 · 시험 ({dashboard.targetExams?.length || 0})
+                  </span>
+                  <button
+                    onClick={() => setIsCertManagerOpen(true)}
+                    className="text-[11px] font-bold text-gray-400 hover:text-[#3478B8]"
+                  >
+                    + 추가
+                  </button>
+                </div>
+                {dashboard.targetExams && dashboard.targetExams.length > 0 ? (
+                  <div className="space-y-3">
+                    {dashboard.targetExams.map(exam => (
+                      <div key={exam.id} className="p-5 bg-[#3478B8]/5 border border-[#3478B8]/20 rounded-2xl group">
+                        <div className="flex justify-between items-start mb-3 gap-2">
+                          <div className="flex items-center space-x-2.5 min-w-0 flex-1">
+                            <div className="w-1.5 h-9 bg-[#D9A23A] rounded-full shrink-0"></div>
+                            <div className="text-left min-w-0 pr-1">
+                              <h4 className="font-bold text-sm text-[#4A4F58] truncate" title={`${exam.certName} (${exam.examType})`}>{exam.certName} ({exam.examType})</h4>
+                              <p className="text-[10px] text-gray-400 font-bold mt-0.5 uppercase">Exam: {exam.examDate}</p>
+                            </div>
+                          </div>
+                          <div className="text-right flex flex-col items-end shrink-0 pl-2 border-l border-gray-200">
+                            <button onClick={() => handleDeleteSchedule(exam.id)} className="text-gray-300 hover:text-red-500 mb-1 transition opacity-0 group-hover:opacity-100" title="일정 삭제"><Trash2 size={14} /></button>
+                            <span className="text-lg font-black text-[#D9A23A] whitespace-nowrap leading-none mt-0.5">{exam.dDay <= 0 ? 'D-Day' : `D-${exam.dDay}`}</span>
                           </div>
                         </div>
-                        <div className="text-right flex flex-col items-end shrink-0 pl-2 border-l border-gray-200">
-                          <button onClick={() => handleDeleteSchedule(exam.id)} className="text-gray-300 hover:text-red-500 mb-1 transition opacity-0 group-hover:opacity-100" title="일정 삭제"><Trash2 size={14} /></button>
-                          <span className="text-xl font-black text-[#D9A23A] whitespace-nowrap leading-none mt-1">{exam.dDay <= 0 ? 'D-Day' : `D-${exam.dDay}`}</span>
+                        <div className="w-full bg-gray-200 rounded-full h-2"><div className="bg-[#3BAA7D] h-2 rounded-full" style={{ width: `${Math.min(100, Number(exam.achievementRate))}%` }}></div></div>
+                        <div className="flex justify-between items-center mt-2.5">
+                          <button
+                            onClick={() => handlePromoteToAcquired(exam)}
+                            className="text-[11px] font-black text-[#3BAA7D] bg-[#3BAA7D]/10 hover:bg-[#3BAA7D]/20 px-2.5 py-1 rounded-lg transition flex items-center gap-1"
+                          >
+                            <CheckCircle2 size={12} /> 합격 전환
+                          </button>
+                          <p className="text-right text-xs text-gray-500 font-bold">목표 달성률: {exam.achievementRate}%</p>
                         </div>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5"><div className="bg-[#3BAA7D] h-2.5 rounded-full" style={{ width: `${Math.min(100, Number(exam.achievementRate))}%` }}></div></div>
-                      <p className="text-right text-xs text-gray-500 mt-2 font-bold">목표 달성률: {exam.achievementRate}%</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-6 bg-gray-50 border border-gray-100 rounded-2xl text-center text-gray-400 font-bold text-sm">목표 시험 일정이 없습니다.<br/>우측 상단 '추가' 버튼으로 등록해보세요.</div>
-              )}
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 bg-gray-50 border border-gray-100 rounded-2xl text-center text-gray-400 font-bold text-xs">
+                    준비 중인 목표 시험이 없습니다.
+                  </div>
+                )}
+              </div>
             </section>
 
             <section className="bg-[#4A4F58] p-8 rounded-[32px] text-white shadow-xl">
@@ -627,6 +728,13 @@ const ProfilePage = () => {
           </div>
         </div>
       )}
+
+      {/* 내 보유 · 목표 자격증 통합 관리 모달 */}
+      <CertManagerModal
+        isOpen={isCertManagerOpen}
+        onClose={() => setIsCertManagerOpen(false)}
+        onUpdated={fetchData}
+      />
     </div>
   )
 }

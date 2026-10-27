@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { FileText, Plus, Trash2, Sparkles, CheckCircle2, Loader2, Copy } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { FileText, Plus, Trash2, Sparkles, CheckCircle2, Loader2, Copy, Briefcase } from 'lucide-react';
 import { aiApi } from '../api/aiApi';
 
 const COVER_LETTER_TAGS = [
@@ -10,6 +11,7 @@ const COVER_LETTER_TAGS = [
 ];
 
 const CoverLetterPage = () => {
+  const location = useLocation();
   const [selectedTags, setSelectedTags] = useState([]);
   const [experiences, setExperiences] = useState([{ id: 1, text: '' }]);
   const [companyName, setCompanyName] = useState('');
@@ -19,6 +21,28 @@ const CoverLetterPage = () => {
   const [additionalInfo, setAdditionalInfo] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState('');
+  const [linkedJobTitle, setLinkedJobTitle] = useState('');
+
+  useEffect(() => {
+    if (location.state) {
+      const { companyName: stateComp, jobRole: stateRole, certName: stateCert, jobTitle: stateTitle } = location.state;
+      if (stateComp) setCompanyName(stateComp);
+      if (stateRole) setJobRole(stateRole);
+      if (stateTitle) setLinkedJobTitle(stateTitle);
+      setSelectedTags(['지원동기', '직무역량', '입사 후 포부']);
+      if (stateCert) {
+        setExperiences([
+          {
+            id: 1,
+            text: `${stateCert} 자격증을 준비하고 취득하는 과정에서 관련 전공/실무 이론을 체계적으로 학습하였으며, 이를 바탕으로 ${stateRole || '해당 직무'} 실무에 즉시 기여할 수 있는 기본기를 다졌습니다.`
+          }
+        ]);
+      }
+      if (stateTitle) {
+        setAdditionalInfo(`지원 채용공고명: ${stateTitle}${stateCert ? ` (우대 자격증: ${stateCert})` : ''}`);
+      }
+    }
+  }, [location.state]);
 
   const toggleTag = (tag) => {
     if (selectedTags.includes(tag)) {
@@ -122,6 +146,23 @@ const CoverLetterPage = () => {
             <p className="text-gray-500 font-medium mt-1">경험과 키워드를 조합하여 맞춤형 자소서를 완성해보세요!</p>
           </div>
         </div>
+
+        {linkedJobTitle && (
+          <div className="mb-8 bg-[#3478B8]/10 border border-[#3478B8]/20 rounded-2xl p-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#3478B8] text-white flex items-center justify-center shrink-0">
+                <Briefcase size={18} />
+              </div>
+              <div>
+                <span className="text-[11px] font-black text-[#3478B8] uppercase">사람인 채용공고 자동 연동됨</span>
+                <p className="text-sm font-black text-slate-800 mt-0.5">{linkedJobTitle}</p>
+              </div>
+            </div>
+            <span className="text-xs font-bold text-[#3BAA7D] bg-white px-3 py-1.5 rounded-full border border-[#3BAA7D]/20 shrink-0">
+              기업명 · 직무 · 자격증 경험 자동 입력 완료
+            </span>
+          </div>
+        )}
 
         {/* Basic Info */}
         <div className="mb-10">
