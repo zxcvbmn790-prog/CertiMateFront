@@ -1,22 +1,119 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { userApi } from '../api/userApi'
 import { examApi } from '../api/examApi'
 import {
   Calendar as CalIcon, MapPin, Navigation,
   Search, ChevronLeft, ChevronRight,
-  Clock, BellRing, Info
+  Clock, BellRing, Info, X, CheckCircle2
 } from 'lucide-react'
 import ExamLocationMap from '../components/ExamLocationMap'
 
+const NOTIFY_DAY_OPTIONS = [
+  { value: '14', label: '2주 전 (D-14)' },
+  { value: '7', label: '일주일 전 (D-7)' },
+  { value: '3', label: '3일 전 (D-3)' },
+  { value: '1', label: '시험 전날 (D-1)' },
+  { value: '0', label: '시험 당일 (D-Day)' }
+];
+
 const CalendarPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeFilter, setActiveFilter] = useState('mine');
   const [dashboard, setDashboard] = useState(null);
+  const [isNotifyModalOpen, setIsNotifyModalOpen] = useState(false);
+  const [notifyStatus, setNotifyStatus] = useState({
+    connected: false,
+    enabled: false,
+    notifyDays: '7,1',
+    notifyTime: '09:00',
+    scheduleCount: 0
+  });
+  const [selectedDays, setSelectedDays] = useState(['7', '1']);
+  const [selectedTime, setSelectedTime] = useState('09:00');
+
+  const fetchNotifyStatus = () => {
+    if (localStorage.getItem('isLoggedIn') !== 'true') return;
+    userApi.getKakaoNotificationStatus()
+      .then(res => {
+        if (res.data) {
+          setNotifyStatus(res.data);
+          const daysArr = (res.data.notifyDays || '7,1')
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean);
+          setSelectedDays(daysArr.length > 0 ? daysArr : ['7', '1']);
+          setSelectedTime(res.data.notifyTime || '09:00');
+        }
+      })
+      .catch(console.error);
+  };
 
   useEffect(() => {
     userApi.getDashboard().then(res => setDashboard(res.data)).catch(console.error);
-  }, []);
+    fetchNotifyStatus();
+    if (new URLSearchParams(location.search).get('kakaoConnected') === 'true') {
+      setIsNotifyModalOpen(true);
+    }
+  }, [location.search]);
+
+  const toggleDayOption = (val) => {
+    setSelectedDays(prev => {
+      const next = prev.includes(val) ? prev.filter(d => d !== val) : [...prev, val];
+      return next.sort((a, b) => Number(b) - Number(a));
+    });
+  };
+
+  const handleConnectKakao = () => {
+    if (selectedDays.length === 0) {
+      alert('최소 1개 이상의 알림 주기를 선택해주세요.');
+      return;
+    }
+    localStorage.setItem('pendingKakaoNotifyDays', selectedDays.join(','));
+    localStorage.setItem('pendingKakaoNotifyTime', selectedTime || '09:00');
+    const REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY;
+    const REDIRECT_URI = import.meta.env.VITE_KAKAO_REDIRECT_URI;
+    window.location.href = `https://kauth.kakao.com/oauth/authorize?client_id=${REST_API_KEY}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=talk_message&state=calendar_notify`;
+  };
+
+  const handleToggleNotify = async () => {
+    const nextEnabled = !notifyStatus.enabled;
+    try {
+      await userApi.updateKakaoNotificationSettings({
+        enabled: nextEnabled,
+        notifyDays: selectedDays.join(','),
+        notifyTime: selectedTime
+      });
+      setNotifyStatus(prev => ({ ...prev, enabled: nextEnabled }));
+    } catch (err) {
+      alert('알림 설정 변경에 실패했습니다.');
+    }
+  };
+
+  const handleSaveNotifySettings = async () => {
+    if (selectedDays.length === 0) {
+      alert('최소 1개 이상의 알림 주기를 선택해주세요.');
+      return;
+    }
+    try {
+      const daysStr = selectedDays.join(',');
+      await userApi.updateKakaoNotificationSettings({
+        enabled: true,
+        notifyDays: daysStr,
+        notifyTime: selectedTime
+      });
+      setNotifyStatus(prev => ({
+        ...prev,
+        enabled: true,
+        notifyDays: daysStr,
+        notifyTime: selectedTime
+      }));
+      alert('알림 주기 및 알람 시간이 저장되었습니다!');
+    } catch (err) {
+      alert('설정 저장에 실패했습니다.');
+    }
+  };
 
   const mySchedules = dashboard?.targetExams ? dashboard.targetExams.map((exam, index) => ({
       id: `my-${index}`, 
@@ -90,21 +187,22 @@ const CalendarPage = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
         <div>
           <h2 className="text-3xl font-black text-[#4A4F58] flex items-center">
+            <CalIcon className="mr-3 text-[#3478B8]" size={32} />
             일정관리
           </h2>
-          <p className="text-[#717171] font-medium mt-1">개인별 맞춤 시험 일정과 고사장 위치를 확인합니다.</p>
+          <p className="text-gray-400 font-medium mt-1">개인별 맞춤 시험 일정과 고사장 위치를 확인합니다.</p>
         </div>
 
-        <div className="flex bg-white p-1.5 rounded-[12px] border border-[#DDDDDD] border border-[#DDDDDD]">
+        <div className="flex bg-white p-1.5 rounded-2xl border border-gray-200 shadow-sm">
           <button
             onClick={() => setActiveFilter('mine')}
-            className={`px-6 py-2 rounded-[8px] text-xs font-black transition ${activeFilter === 'mine' ? 'bg-[#3478B8] text-white border border-[#DDDDDD]' : 'text-[#717171] hover:bg-[#F7F7F7]'}`}
+            className={`px-6 py-2 rounded-xl text-xs font-black transition ${activeFilter === 'mine' ? 'bg-[#3478B8] text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}
           >
             내 일정 (Scrapped)
           </button>
           <button
             onClick={() => setActiveFilter('all')}
-            className={`px-6 py-2 rounded-[8px] text-xs font-black transition ${activeFilter === 'all' ? 'bg-[#3478B8] text-white border border-[#DDDDDD]' : 'text-[#717171] hover:bg-[#F7F7F7]'}`}
+            className={`px-6 py-2 rounded-xl text-xs font-black transition ${activeFilter === 'all' ? 'bg-[#3478B8] text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}
           >
             전체 시험 일정
           </button>
@@ -114,25 +212,25 @@ const CalendarPage = () => {
       <div className="grid lg:grid-cols-12 gap-8">
         {/* 1. 메인 캘린더 섹션 */}
         <div className="lg:col-span-8 space-y-6">
-          <div className="bg-white p-8 rounded-[32px] border border-[#DDDDDD] border border-[#DDDDDD]">
+          <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
             <div className="flex justify-between items-center mb-8">
               <h3 className="text-xl font-black flex items-center">
                   {`${viewYear}년 ${viewMonth + 1}월`}
                 </h3>
                 <div className="flex space-x-2">
-                  <button onClick={handlePrevMonth} className="p-2 hover:bg-[#F7F7F7] rounded-[8px] transition text-[#717171]"><ChevronLeft size={20}/></button>
-                  <button onClick={handleNextMonth} className="p-2 hover:bg-[#F7F7F7] rounded-[8px] transition text-[#717171]"><ChevronRight size={20}/></button>
+                  <button onClick={handlePrevMonth} className="p-2 hover:bg-gray-100 rounded-xl transition text-gray-400"><ChevronLeft size={20}/></button>
+                  <button onClick={handleNextMonth} className="p-2 hover:bg-gray-100 rounded-xl transition text-gray-400"><ChevronRight size={20}/></button>
                 </div>
             </div>
 
             <div className="grid grid-cols-7 mb-4">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="text-center text-[10px] font-black text-[#717171] uppercase tracking-widest py-2">{day}</div>
+                <div key={day} className="text-center text-[10px] font-black text-gray-300 uppercase tracking-widest py-2">{day}</div>
               ))}
               </div>
             <div className="grid grid-cols-7 gap-2">
               {[...Array(firstDayOfMonth)].map((_, i) => (
-                  <div key={`empty-${i}`} className="h-28 p-3 rounded-[12px] border border-transparent"></div>
+                  <div key={`empty-${i}`} className="h-28 p-3 rounded-2xl border border-transparent"></div>
                 ))}
                 {[...Array(daysInMonth)].map((_, i) => {
                   const day = i + 1;
@@ -140,20 +238,20 @@ const CalendarPage = () => {
                   const isExam = examsOnDay.length > 0;
                   const isReg = false;
                   return (
-                    <div key={i} className={`h-28 p-2 rounded-[12px] border transition group cursor-pointer ${
+                    <div key={i} className={`h-28 p-2 rounded-2xl border transition group cursor-pointer ${
                       isExam ? 'bg-[#D9A23A]/5 border-[#D9A23A]/30' :
                       isReg ? 'bg-[#3478B8]/5 border-[#3478B8]/30' :
-                      'bg-[#F7F7F7] border-transparent hover:border-[#DDDDDD]'
+                      'bg-gray-50 border-transparent hover:border-gray-200'
                     }`}>
-                      <span className={`text-sm font-black ${isExam ? 'text-[#D9A23A]' : isReg ? 'text-[#3478B8]' : 'text-[#717171]'}`}>
+                      <span className={`text-sm font-black ${isExam ? 'text-[#D9A23A]' : isReg ? 'text-[#3478B8]' : 'text-gray-400'}`}>
                         {day}
                       </span>
-                      {isReg && <div className="mt-1 text-[9px] font-black bg-[#3478B8] text-white p-1 rounded-[8px] truncate">접수 시작</div>}
+                      {isReg && <div className="mt-1 text-[9px] font-black bg-[#3478B8] text-white p-1 rounded-md truncate">접수 시작</div>}
                       <div className="flex flex-wrap gap-2 mt-2">
                         {examsOnDay.map((eObj, idx) => (
                           <div key={idx} className="relative group/tooltip">
-                            <div className="w-2.5 h-2.5 bg-[#D9A23A] rounded-full border border-[#DDDDDD] hover:scale-125 transition-transform cursor-pointer"></div>
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-gray-900 text-white text-[11px] font-black rounded-[8px] opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all whitespace-nowrap z-[999] border border-[#DDDDDD] pointer-events-none">
+                            <div className="w-2.5 h-2.5 bg-[#D9A23A] rounded-full shadow-sm hover:scale-125 transition-transform cursor-pointer"></div>
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-gray-900 text-white text-[11px] font-black rounded-lg opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all whitespace-nowrap z-[999] shadow-xl pointer-events-none">
                               {eObj.name} {eObj.examType || ''}
                               <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
                             </div>
@@ -166,27 +264,39 @@ const CalendarPage = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-6 bg-white rounded-[12px] border border-[#DDDDDD] border border-[#DDDDDD]">
+          <div className="flex items-center justify-between p-6 bg-white rounded-2xl border border-gray-100 shadow-sm">
             <div className="flex space-x-6">
-              <div className="flex items-center text-[10px] font-bold text-[#717171]">
+              <div className="flex items-center text-[10px] font-bold text-gray-400">
                 <div className="w-3 h-3 bg-[#3478B8] rounded-full mr-2"></div> 원서접수
               </div>
-              <div className="flex items-center text-[10px] font-bold text-[#717171]">
+              <div className="flex items-center text-[10px] font-bold text-gray-400">
                 <div className="w-3 h-3 bg-[#D9A23A] rounded-full mr-2"></div> 시험일
               </div>
             </div>
-            <button className="text-[10px] font-black text-[#3478B8] flex items-center hover:underline">
-              <BellRing size={14} className="mr-1" /> 알림 설정 관리
+            <button
+              onClick={() => setIsNotifyModalOpen(true)}
+              className="text-xs font-black text-[#3478B8] flex items-center hover:underline bg-[#3478B8]/10 px-3 py-1.5 rounded-full transition"
+            >
+              <BellRing size={14} className="mr-1.5" />
+              카카오톡 자동 알림 설정 {notifyStatus.connected && notifyStatus.enabled ? '(ON)' : '(관리)'}
             </button>
           </div>
         </div>
 
         {/* 2. 사이드바: D-Day 및 고사장 안내 */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-[#4A4F58] p-8 rounded-[32px] text-white border border-[#DDDDDD]">
-            <h3 className="text-lg font-bold mb-6 flex items-center tracking-tight">
-              <Clock className="mr-2 text-[#3BAA7D]" size={18} /> 다가오는 일정
-            </h3>
+          <div className="bg-[#4A4F58] p-8 rounded-[32px] text-white shadow-xl">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-bold flex items-center tracking-tight">
+                <Clock className="mr-2 text-[#3BAA7D]" size={18} /> 다가오는 일정
+              </h3>
+              <button
+                onClick={() => setIsNotifyModalOpen(true)}
+                className="text-[11px] font-black bg-[#FEE500] text-[#3c1e1e] px-3 py-1.5 rounded-full hover:opacity-90 transition flex items-center shadow-sm"
+              >
+                <BellRing size={12} className="mr-1" /> 카톡 알림
+              </button>
+            </div>
             <div className="space-y-4">
               
               {(() => {
@@ -198,15 +308,15 @@ const CalendarPage = () => {
                     })
                   : displayedSchedules;
                   
-                if (upcomingList.length === 0) return <div className="p-4 text-center text-[#717171] font-bold text-sm">다가오는 일정이 없습니다.</div>;
+                if (upcomingList.length === 0) return <div className="p-4 text-center text-gray-400 font-bold text-sm">다가오는 일정이 없습니다.</div>;
                 
                 return upcomingList.map(item => (
 
-                <div key={item.id} className="p-4 bg-white/5 rounded-[12px] border border-white/10 hover:bg-white/10 transition cursor-pointer group">
+                <div key={item.id} className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition cursor-pointer group">
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="text-sm font-bold group-hover:text-[#3BAA7D] transition-colors">{item.name}</p>
-                      <p className="text-[10px] text-[#717171] mt-1">{item.date}</p>
+                      <p className="text-[10px] text-gray-400 mt-1">{item.date}</p>
                     </div>
                     <span className="text-xs font-black" style={{ color: item.color }}>{item.dday}</span>
                   </div>
@@ -217,14 +327,14 @@ const CalendarPage = () => {
           </div>
 
           {/* 고사장 검색 위젯 */}
-          <div className="bg-white p-8 rounded-[32px] border border-[#DDDDDD] border border-[#DDDDDD]">
+          <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-black flex items-center">
                 <Search className="mr-2 text-[#3478B8]" size={18} /> 고사장 검색
               </h3>
             </div>
             
-            <p className="text-xs text-[#717171] mb-4 font-bold">지역명을 검색하거나 선택하여 고사장을 찾아보세요.</p>
+            <p className="text-xs text-gray-500 mb-4 font-bold">지역명을 검색하거나 선택하여 고사장을 찾아보세요.</p>
 
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -235,15 +345,15 @@ const CalendarPage = () => {
                 name="search"
                 type="text" 
                 placeholder="지역명 검색 (예: 강남구)" 
-                className="w-full text-sm font-bold p-4 bg-[#F7F7F7] border border-[#DDDDDD] rounded-[8px] outline-none focus:border-[#3478B8] transition-colors"
+                className="w-full text-sm font-bold p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#3478B8] transition-colors"
               />
-              <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2 text-[#3478B8] p-2 hover:bg-[#F7F7F7] rounded-[8px]">
+              <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2 text-[#3478B8] p-2 hover:bg-gray-100 rounded-lg">
                 <Search size={18} />
               </button>
             </form>
 
             <div className="grid grid-cols-2 gap-2 mb-3">
-              <select id="citySelect" defaultValue="default" className="text-sm font-bold p-4 bg-[#F7F7F7] border border-[#DDDDDD] rounded-[8px] outline-none focus:border-[#3478B8] cursor-pointer">
+              <select id="citySelect" defaultValue="default" className="text-sm font-bold p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#3478B8] cursor-pointer">
                 <option value="default" disabled hidden>주요 시/도</option>
                 <option value="서울특별시">서울특별시</option>
                 <option value="경기도">경기도</option>
@@ -253,7 +363,7 @@ const CalendarPage = () => {
                 <option value="광주광역시">광주광역시</option>
                 <option value="대전광역시">대전광역시</option>
               </select>
-              <select id="districtSelect" defaultValue="default" className="text-sm font-bold p-4 bg-[#F7F7F7] border border-[#DDDDDD] rounded-[8px] outline-none focus:border-[#3478B8] cursor-pointer">
+              <select id="districtSelect" defaultValue="default" className="text-sm font-bold p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#3478B8] cursor-pointer">
                 <option value="default" disabled hidden>주요 구</option>
                 <option value="강남구">강남구</option>
                 <option value="서초구">서초구</option>
@@ -268,12 +378,132 @@ const CalendarPage = () => {
               const dist = document.getElementById('districtSelect').value;
               const query = [city, dist].filter(v => v !== 'default').join(' ');
               if(query) navigate(`/exam-locations?query=${encodeURIComponent(query)}`);
-            }} className="w-full py-3 bg-[#F7F7F7] text-[#717171] hover:bg-[#3478B8] hover:text-white font-bold rounded-[8px] transition text-sm">
+            }} className="w-full py-3 bg-gray-100 text-gray-500 hover:bg-[#3478B8] hover:text-white font-bold rounded-xl transition text-sm">
               선택한 지역으로 검색
             </button>
           </div>
         </div>
       </div>
+
+      {/* 카카오톡 시험 일정 자동 알림 설정 모달 */}
+      {isNotifyModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-[32px] p-8 w-full max-w-md shadow-2xl relative border border-gray-100">
+            <button
+              onClick={() => setIsNotifyModalOpen(false)}
+              className="absolute top-6 right-6 text-gray-400 hover:text-gray-600"
+            >
+              <X size={24} />
+            </button>
+
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-[#FEE500] flex items-center justify-center shrink-0">
+                <BellRing className="text-[#3c1e1e]" size={24} />
+              </div>
+              <div>
+                <h2 className="text-xl font-black text-[#4A4F58]">카카오톡 시험 자동 알림</h2>
+                <p className="text-xs text-gray-400 font-bold mt-0.5">권한 동의 시 즉시 시험 일정이 카톡으로 발송됩니다</p>
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              {/* 연동 상태 */}
+              <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex justify-between items-center">
+                <div>
+                  <p className="text-xs font-black text-gray-400 uppercase">카카오톡 연동 상태</p>
+                  <p className="text-sm font-black text-[#4A4F58] mt-1 flex items-center">
+                    {notifyStatus.connected ? (
+                      <>
+                        <CheckCircle2 size={16} className="text-[#3BAA7D] mr-1.5" />
+                        연동 완료 (등록된 시험 {notifyStatus.scheduleCount}건)
+                      </>
+                    ) : (
+                      '미연동 (권한 동의 시 즉시 발신)'
+                    )}
+                  </p>
+                </div>
+                {notifyStatus.connected && (
+                  <button
+                    onClick={handleToggleNotify}
+                    className={`px-4 py-2 rounded-xl text-xs font-black transition ${
+                      notifyStatus.enabled
+                        ? 'bg-[#3BAA7D] text-white'
+                        : 'bg-gray-200 text-gray-600'
+                    }`}
+                  >
+                    {notifyStatus.enabled ? '자동알림 ON' : '자동알림 OFF'}
+                  </button>
+                )}
+              </div>
+
+              {/* 1. 알림 주기 설정 (복수 선택) */}
+              <div>
+                <label className="block text-xs font-black text-[#4A4F58] mb-2">
+                  📅 알림 주기 선택 (복수 선택 가능)
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {NOTIFY_DAY_OPTIONS.map(opt => {
+                    const active = selectedDays.includes(opt.value);
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => toggleDayOption(opt.value)}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-black transition border ${
+                          active
+                            ? 'bg-[#3478B8] text-white border-[#3478B8] shadow-sm'
+                            : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 2. 알람 시간 설정 */}
+              <div>
+                <label className="block text-xs font-black text-[#4A4F58] mb-2">
+                  ⏰ 알람 발송 시간 설정
+                </label>
+                <input
+                  type="time"
+                  value={selectedTime}
+                  onChange={(e) => setSelectedTime(e.target.value)}
+                  className="w-full p-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm font-black text-[#4A4F58] outline-none focus:border-[#3478B8] transition"
+                />
+                <p className="text-[11px] text-gray-400 font-bold mt-1.5">
+                  선택한 주기의 해당 날짜마다 설정하신 시각에 카카오톡이 자동 발송됩니다.
+                </p>
+              </div>
+
+              {/* 이미 연동된 경우 주기/시간만 바로 저장하는 버튼 */}
+              {notifyStatus.connected && (
+                <button
+                  type="button"
+                  onClick={handleSaveNotifySettings}
+                  className="w-full bg-[#3478B8] text-white py-3.5 rounded-xl font-black text-sm flex items-center justify-center shadow-md hover:bg-[#2e69a3] transition"
+                >
+                  알림 주기 · 시간 설정 저장하기
+                </button>
+              )}
+
+              {/* 카카오 연동 및 권한 동의 (동의 즉시 시험 일정 카톡 발신) */}
+              <button
+                type="button"
+                onClick={handleConnectKakao}
+                className="w-full bg-[#FEE500] text-[#3c1e1e] py-3.5 rounded-xl font-black text-sm flex items-center justify-center shadow-sm hover:opacity-90 transition"
+              >
+                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e3/KakaoTalk_logo.svg" alt="kakao" className="w-4 h-4 mr-2" />
+                {notifyStatus.connected
+                  ? '권한 재동의 및 지금 시험 일정 카톡 받기'
+                  : '카카오톡 권한 동의하고 시험 일정 카톡 받기'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

@@ -265,28 +265,28 @@ const StudyPage = () => {
   // ==========================================
   if (!isStarted) {
     return (
-      <div className="min-h-screen bg-[#F7F7F7] font-sans text-[#222222]">
+      <div className="min-h-screen bg-[#EAECEF] font-sans text-[#4A4F58]">
         {/* Hero Section */}
-        <header className="relative py-24 px-6 bg-white border-b border-[#DDDDDD] overflow-hidden">
+        <header className="relative py-24 px-6 bg-white border-b border-gray-200 overflow-hidden">
           <div className="max-w-5xl mx-auto text-center relative z-10">
-            <h1 className="text-4xl md:text-6xl font-black mb-8 leading-[1.15] text-[#222222]">
-              실전 모의고사
+            <h1 className="text-4xl md:text-6xl font-black mb-8 leading-[1.15]">
+              <span className="text-[#3478B8]">실전 모의고사</span>
             </h1>
-            <p className="text-[#717171] text-lg mb-12 font-medium max-w-2xl mx-auto">
+            <p className="text-gray-400 text-lg mb-12 font-medium max-w-2xl mx-auto">
               실제 시험과 동일한 환경에서 실력을 점검하고 취약점을 파악하세요.
             </p>
 
             {/* 통합 검색창 */}
-            <div className="relative max-w-3xl mx-auto flex flex-col md:flex-row  rounded-[12px] overflow-hidden border border-[#DDDDDD] bg-white">
+            <div className="relative max-w-3xl mx-auto flex flex-col md:flex-row shadow-2xl rounded-3xl overflow-hidden border border-gray-100 bg-white">
               <div className="flex-1 relative">
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="학습할 자격증 명칭을 검색합니다 (예: 정보처리, SQLD...)"
-                  className="w-full p-6 pl-14 outline-none text-base font-medium placeholder:text-[#717171]"
+                  className="w-full p-6 pl-14 outline-none text-base font-medium placeholder:text-gray-300"
                 />
-                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-[#717171]" size={22} />
+                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300" size={22} />
               </div>
             </div>
           </div>
@@ -301,31 +301,31 @@ const StudyPage = () => {
                 <div
                   key={cert.id}
                   onClick={() => setSelectedCert(cert)}
-                  className={`p-8 rounded-[12px] border-2 transition-all cursor-pointer group hover: hover: bg-white
-                    ${isSelected ? 'border-[#FF385C]  ' : 'border-[#DDDDDD] hover:border-[#FF385C]'}`}
+                  className={`p-8 rounded-[24px] border-2 transition-all cursor-pointer group hover:shadow-xl hover:shadow-[#3478B8]/5 bg-white
+                    ${isSelected ? 'border-[#3478B8] shadow-lg shadow-[#3478B8]/10' : 'border-gray-100 hover:border-[#3478B8]'}`}
                 >
                   <div className="flex justify-between items-start mb-6">
                     <div className="flex space-x-2">
-                      <span className={`text-[9px] font-black px-2.5 py-1.5 rounded-[8px] border uppercase tracking-tighter
-                        ${isSelected ? 'bg-[#FF385C] text-white border-[#FF385C]' : 'bg-[#F7F7F7] text-[#717171] border-[#DDDDDD]'}`}
+                      <span className={`text-[9px] font-black px-2.5 py-1.5 rounded-lg border uppercase tracking-tighter
+                        ${isSelected ? 'bg-[#3478B8] text-white border-[#3478B8]' : 'bg-gray-50 text-gray-400 border-gray-100'}`}
                       >
                         #{cert.category}
                       </span>
                     </div>
                     {cert.difficulty && (
                       <div className="text-right">
-                        <span className={`text-[11px] font-black ${isSelected ? 'text-[#FF385C]' : 'text-[#3BAA7D]'}`}>{cert.difficulty}</span>
+                        <span className={`text-[11px] font-black ${isSelected ? 'text-[#3478B8]' : 'text-[#3BAA7D]'}`}>{cert.difficulty}</span>
                       </div>
                     )}
                   </div>
-                  <h4 className={`text-2xl font-black mb-3 transition-colors ${isSelected ? 'text-[#FF385C]' : 'group-hover:text-[#FF385C]'}`}>{cert.name}</h4>
-                  <div className="flex items-center text-xs text-[#717171] font-bold space-x-4 mb-3">
-                    <span className="flex items-center"><BookOpen size={14} className="mr-1.5 text-[#717171]" /> 총 {cert.questions}문항</span>
+                  <h4 className={`text-2xl font-black mb-3 transition-colors ${isSelected ? 'text-[#3478B8]' : 'group-hover:text-[#3478B8]'}`}>{cert.name}</h4>
+                  <div className="flex items-center text-xs text-gray-400 font-bold space-x-4 mb-3">
+                    <span className="flex items-center"><BookOpen size={14} className="mr-1.5 text-gray-300" /> 총 {cert.questions}문항</span>
                   </div>
                   {cert.subjects && (
                     <div className="flex items-center gap-1.5">
                       {cert.subjects.map((n, i) => (
-                        <span key={i} className="text-[10px] font-black px-2 py-1 rounded-[8px] bg-[#F7F7F7] text-[#717171] border border-[#DDDDDD]">
+                        <span key={i} className="text-[10px] font-black px-2 py-1 rounded-md bg-gray-50 text-gray-400 border border-gray-100">
                           {i + 1}과목 {n}
                         </span>
                       ))}
@@ -339,8 +339,8 @@ const StudyPage = () => {
           <button
             disabled={!selectedCert || isLoading}
             onClick={startExam}
-            className={`w-full py-5 rounded-[12px] font-black text-lg transition-all 
-              ${selectedCert ? 'bg-[#FF385C] text-white  hover:bg-[#2e69a3]' : 'bg-gray-200 text-[#717171] cursor-not-allowed shadow-none'}`}
+            className={`w-full py-5 rounded-[24px] font-black text-lg transition-all shadow-xl
+              ${selectedCert ? 'bg-[#3478B8] text-white shadow-[#3478B8]/20 hover:bg-[#2e69a3]' : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'}`}
           >
             {isLoading ? '시험지 준비 중...' : (selectedCert ? `"${selectedCert.name}" 학습 시작하기` : '응시할 종목을 선택해 주세요')}
           </button>
@@ -368,35 +368,35 @@ const StudyPage = () => {
       const isCorrect = isCorrectAnswer(question, userAnswers[question.learnId])
       if (isCorrect) return 'bg-[#3BAA7D]/10 border-[#3BAA7D]/30 text-[#3BAA7D]'
       if (isAnswered) return 'bg-[#E61E2B]/10 border-[#E61E2B]/30 text-[#E61E2B]'
-      return 'bg-gray-100 border-transparent text-[#717171]'
+      return 'bg-gray-100 border-transparent text-gray-300'
     }
-    if (isCurrent) return 'bg-[#FF385C] text-white border-[#FF385C]  '
-    if (isAnswered) return 'bg-[#FF385C]/10 border-[#FF385C]/20 text-[#FF385C]'
-    return 'bg-[#F7F7F7] text-[#717171] border-[#DDDDDD] hover:border-gray-300'
+    if (isCurrent) return 'bg-[#3478B8] text-white border-[#3478B8] shadow-md shadow-[#3478B8]/20'
+    if (isAnswered) return 'bg-[#3478B8]/10 border-[#3478B8]/20 text-[#3478B8]'
+    return 'bg-gray-50 text-gray-400 border-gray-100 hover:border-gray-300'
   }
 
   // ==========================================
   // [2단계 화면] CBT 문제 풀이
   // ==========================================
   return (
-    <div className="min-h-screen bg-[#F7F7F7] font-sans text-[#222222] py-8 px-6">
+    <div className="min-h-screen bg-[#EAECEF] font-sans text-[#4A4F58] py-8 px-6">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-10">
         {/* 좌측: 문제 영역 */}
         <div className="flex-1 flex flex-col gap-6 w-full">
-          <header className="flex items-center justify-between bg-white rounded-[12px] p-6 border border-[#DDDDDD] ">
+          <header className="flex items-center justify-between bg-white rounded-[24px] p-6 border border-gray-100 shadow-sm">
             <div className="flex items-center space-x-4">
               <button onClick={() => { if (window.confirm('시험을 중단하시겠습니까? 기록이 저장되지 않습니다.')) setIsStarted(false) }}
-                className="w-10 h-10 flex items-center justify-center bg-[#F7F7F7] hover:bg-gray-100 text-[#717171] rounded-[8px] transition-colors border border-[#DDDDDD]"
+                className="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-400 rounded-full transition-colors border border-gray-100"
               >
                 <RotateCcw size={18} />
               </button>
               <h2 className="text-xl md:text-2xl font-black tracking-tight">{selectedCert.name} 모의고사</h2>
             </div>
             <div className="flex flex-col items-end">
-              <div className="text-xs font-black text-[#717171] tracking-tighter mb-1.5">진행률 {currentIndex + 1} / {questions.length}</div>
-              <div className="w-32 bg-gray-100 rounded-[8px] h-1.5 overflow-hidden">
+              <div className="text-xs font-black text-gray-400 tracking-tighter mb-1.5">진행률 {currentIndex + 1} / {questions.length}</div>
+              <div className="w-32 bg-gray-100 rounded-full h-1.5 overflow-hidden">
                 <div
-                  className="bg-[#FF385C] h-1.5 rounded-[8px] transition-all duration-300"
+                  className="bg-[#3478B8] h-1.5 rounded-full transition-all duration-300"
                   style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
                 ></div>
               </div>
@@ -404,21 +404,21 @@ const StudyPage = () => {
           </header>
 
           {q && (
-            <div className="bg-white p-8 md:p-12 rounded-[12px] border border-[#DDDDDD]  flex-1 flex flex-col">
+            <div className="bg-white p-8 md:p-12 rounded-[32px] border border-gray-100 shadow-sm flex-1 flex flex-col">
               <div className="mb-10">
                 <div className="flex justify-between items-center mb-6">
                   <div className="flex items-center gap-2">
-                    <span className="text-[12px] font-black text-[#FF385C] uppercase tracking-widest bg-[#FF385C]/10 px-4 py-2 rounded-[8px] flex items-center">
+                    <span className="text-[12px] font-black text-[#3478B8] uppercase tracking-widest bg-[#3478B8]/10 px-4 py-2 rounded-full flex items-center">
                       <Zap size={14} className="mr-1.5" /> Question {String(currentIndex + 1).padStart(2, '0')}
                     </span>
                     {q.subjectNum > 0 && (
-                      <span className="text-[12px] font-black text-[#D9A23A] bg-[#D9A23A]/10 px-4 py-2 rounded-[8px]">
+                      <span className="text-[12px] font-black text-[#D9A23A] bg-[#D9A23A]/10 px-4 py-2 rounded-full">
                         {subjectLabel(q.subjectNum)}
                       </span>
                     )}
                   </div>
                   {isGraded && (
-                    <span className={`text-[12px] font-black px-4 py-2 rounded-[8px] tracking-widest uppercase
+                    <span className={`text-[12px] font-black px-4 py-2 rounded-full tracking-widest uppercase
                       ${isCorrectAnswer(q, userAnswers[q.learnId]) ? 'bg-[#3BAA7D]/10 text-[#3BAA7D]' : 'bg-[#E61E2B]/10 text-[#E61E2B]'}`}>
                       {isCorrectAnswer(q, userAnswers[q.learnId]) ? 'Correct' : 'Incorrect'}
                     </span>
@@ -441,22 +441,22 @@ const StudyPage = () => {
               </div>
 
               {isGraded && q.explanation && (
-                <div className="mt-10 p-6 rounded-[12px] bg-[#3BAA7D]/5 border border-[#3BAA7D]/20 text-[#222222] text-sm leading-relaxed">
+                <div className="mt-10 p-6 rounded-[24px] bg-[#3BAA7D]/5 border border-[#3BAA7D]/20 text-[#4A4F58] text-sm leading-relaxed">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-[#3BAA7D] font-black tracking-tight flex items-center">
                       <CheckCircle size={16} className="mr-1.5" /> 문제 해설
                     </span>
                     {q.explanationAi && (
-                      <span className="text-[10px] font-black text-[#D9A23A] bg-[#D9A23A]/10 px-2.5 py-1 rounded-[8px] flex items-center">
+                      <span className="text-[10px] font-black text-[#D9A23A] bg-[#D9A23A]/10 px-2.5 py-1 rounded-full flex items-center">
                         <Zap size={12} className="mr-1" /> AI 생성 · 오류가 있을 수 있어요
                       </span>
                     )}
                   </div>
-                  <p className="font-medium whitespace-pre-line text-[#717171]">{q.explanation}</p>
+                  <p className="font-medium whitespace-pre-line text-gray-600">{q.explanation}</p>
                   {q.explanationAi && (
                     <button
                       onClick={() => reportExplanation(q.learnId)}
-                      className="mt-4 text-[11px] font-bold text-[#717171] hover:text-[#E61E2B] underline underline-offset-2 transition-colors"
+                      className="mt-4 text-[11px] font-bold text-gray-400 hover:text-[#E61E2B] underline underline-offset-2 transition-colors"
                     >
                       이 해설이 이상해요 (신고)
                     </button>
@@ -469,7 +469,7 @@ const StudyPage = () => {
                   <button
                     onClick={() => generateExplanation(q.learnId)}
                     disabled={explainingId === q.learnId}
-                    className="w-full py-5 rounded-[12px] font-black text-[15px] transition-all border-2 border-dashed border-[#FF385C]/30 text-[#FF385C] bg-[#FF385C]/5 hover:bg-[#FF385C]/10 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="w-full py-5 rounded-[24px] font-black text-[15px] transition-all border-2 border-dashed border-[#3478B8]/30 text-[#3478B8] bg-[#3478B8]/5 hover:bg-[#3478B8]/10 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
                   >
                     <Zap size={16} className={`mr-2 ${explainingId === q.learnId ? 'animate-pulse' : ''}`} />
                     {explainingId === q.learnId ? 'AI가 해설을 생성 중입니다...' : '이 문제 AI 해설 보기'}
@@ -483,14 +483,14 @@ const StudyPage = () => {
             <button
               onClick={goToPrev}
               disabled={currentIndex === 0}
-              className="flex items-center px-8 py-5 bg-white border border-[#DDDDDD] hover:bg-[#F7F7F7] text-[#222222] rounded-[12px] transition disabled:opacity-50 disabled:cursor-not-allowed font-black"
+              className="flex items-center px-8 py-5 bg-white border border-gray-200 hover:bg-gray-50 text-[#4A4F58] rounded-2xl transition disabled:opacity-50 disabled:cursor-not-allowed font-black"
             >
               <ChevronLeft className="mr-2" size={20} /> 이전 문항
             </button>
             <button
               onClick={goToNext}
               disabled={currentIndex === questions.length - 1}
-              className="flex items-center flex-1 justify-center px-8 py-5 bg-[#FF385C]/10 hover:bg-[#FF385C]/20 border border-[#FF385C]/20 text-[#FF385C] rounded-[12px] transition font-black disabled:opacity-30 disabled:cursor-not-allowed"
+              className="flex items-center flex-1 justify-center px-8 py-5 bg-[#3478B8]/10 hover:bg-[#3478B8]/20 border border-[#3478B8]/20 text-[#3478B8] rounded-2xl transition font-black disabled:opacity-30 disabled:cursor-not-allowed"
             >
               다음 문항 <ChevronRight className="ml-2" size={20} />
             </button>
@@ -500,16 +500,16 @@ const StudyPage = () => {
         {/* 우측: OMR 및 정보 패널 */}
         <div className="w-full lg:w-[380px] flex flex-col gap-6 shrink-0">
           {isGraded && result ? (
-            <div className="bg-[#4A4F58] rounded-[12px] p-8 text-white  relative overflow-hidden border border-gray-800">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-[8px] -mr-16 -mt-16"></div>
+            <div className="bg-[#4A4F58] rounded-[32px] p-8 text-white shadow-2xl relative overflow-hidden border border-gray-800">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16"></div>
               <div className="text-center mb-6">
-                <div className="text-[#717171] font-black text-xs mb-3 uppercase tracking-widest">Total Score</div>
+                <div className="text-gray-300 font-black text-xs mb-3 uppercase tracking-widest">Total Score</div>
                 <div className="text-5xl font-black tracking-tighter text-[#D9A23A]">
-                  {result.overall}<span className="text-2xl text-[#717171]">점</span>
+                  {result.overall}<span className="text-2xl text-gray-400">점</span>
                 </div>
-                <div className="text-[#717171] text-xs font-bold mt-1">{result.totalCorrect} / {result.totalQ} 정답</div>
+                <div className="text-gray-300 text-xs font-bold mt-1">{result.totalCorrect} / {result.totalQ} 정답</div>
                 {result.hasSubjects && (
-                  <div className={`inline-block mt-4 px-5 py-2 rounded-[8px] font-black text-sm tracking-widest
+                  <div className={`inline-block mt-4 px-5 py-2 rounded-full font-black text-sm tracking-widest
                     ${result.passed ? 'bg-[#3BAA7D] text-white' : 'bg-[#E61E2B] text-white'}`}>
                     {result.passed ? '합격' : (result.failedSubject ? '불합격 (과목 과락)' : '불합격 (평균 미달)')}
                   </div>
@@ -520,24 +520,24 @@ const StudyPage = () => {
                   {result.subjects.filter((s) => s.subjectNum > 0).map((s) => (
                     <div key={s.subjectNum}>
                       <div className="flex justify-between text-xs font-bold mb-1">
-                        <span className="text-[#717171]">{subjectLabel(s.subjectNum)} ({s.correct}/{s.total})</span>
+                        <span className="text-gray-300">{subjectLabel(s.subjectNum)} ({s.correct}/{s.total})</span>
                         <span className={s.score < 40 ? 'text-[#E61E2B]' : 'text-[#D9A23A]'}>
                           {s.score}점{s.score < 40 ? ' 과락' : ''}
                         </span>
                       </div>
-                      <div className="w-full bg-white/10 rounded-[8px] h-1.5 overflow-hidden">
-                        <div className={`h-1.5 rounded-[8px] ${s.score < 40 ? 'bg-[#E61E2B]' : 'bg-[#3BAA7D]'}`} style={{ width: `${s.score}%` }}></div>
+                      <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                        <div className={`h-1.5 rounded-full ${s.score < 40 ? 'bg-[#E61E2B]' : 'bg-[#3BAA7D]'}`} style={{ width: `${s.score}%` }}></div>
                       </div>
                     </div>
                   ))}
-                  <p className="text-[10px] text-[#717171] font-medium pt-1">합격 기준: 과목당 40점 이상 &amp; 전과목 평균 60점 이상</p>
+                  <p className="text-[10px] text-gray-400 font-medium pt-1">합격 기준: 과목당 40점 이상 &amp; 전과목 평균 60점 이상</p>
                 </div>
               )}
             </div>
           ) : (
-            <div className="bg-[#4A4F58] rounded-[12px] p-8 text-white  relative overflow-hidden text-center border border-gray-800">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-[8px] -mr-16 -mt-16"></div>
-              <div className="text-[#717171] font-black text-xs mb-3 uppercase tracking-widest flex items-center justify-center">
+            <div className="bg-[#4A4F58] rounded-[32px] p-8 text-white shadow-2xl relative overflow-hidden text-center border border-gray-800">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16"></div>
+              <div className="text-gray-300 font-black text-xs mb-3 uppercase tracking-widest flex items-center justify-center">
                 <Timer size={16} className="mr-2" /> Remaining Time
               </div>
               <div className={`text-5xl font-mono font-black tracking-tighter ${timeLeft < 600 ? 'text-[#E61E2B]' : 'text-[#D9A23A]'}`}>
@@ -546,12 +546,12 @@ const StudyPage = () => {
             </div>
           )}
 
-          <div className="bg-white rounded-[12px] border border-[#DDDDDD] p-8  flex-1 flex flex-col min-h-[300px]">
+          <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm flex-1 flex flex-col min-h-[300px]">
             <div className="flex justify-between items-center mb-8">
               <h3 className="font-black text-lg flex items-center tracking-tight">
-                <BookOpen size={18} className="mr-2 text-[#FF385C]" /> 답안 현황
+                <BookOpen size={18} className="mr-2 text-[#3478B8]" /> 답안 현황
               </h3>
-              <span className="text-[11px] font-black bg-[#FF385C]/10 px-3 py-1.5 rounded-[8px] text-[#FF385C] uppercase tracking-widest">
+              <span className="text-[11px] font-black bg-[#3478B8]/10 px-3 py-1.5 rounded-full text-[#3478B8] uppercase tracking-widest">
                 {Object.keys(userAnswers).length} / {questions.length}
               </span>
             </div>
@@ -560,7 +560,7 @@ const StudyPage = () => {
               {omrGroups.map((group) => (
                 <div key={group.subjectNum}>
                   {group.subjectNum > 0 && (
-                    <div className="text-[11px] font-black text-[#717171] uppercase tracking-widest mb-2 pl-0.5">
+                    <div className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 pl-0.5">
                       {subjectLabel(group.subjectNum)}
                     </div>
                   )}
@@ -571,7 +571,7 @@ const StudyPage = () => {
                         <button
                           key={question.learnId}
                           onClick={() => setCurrentIndex(idx)}
-                          className={`h-12 rounded-[8px] text-sm font-black border transition-all flex items-center justify-center ${omrBtnClass(question, idx)}`}
+                          className={`h-12 rounded-xl text-sm font-black border transition-all flex items-center justify-center ${omrBtnClass(question, idx)}`}
                         >
                           {isAnswered && !isGraded && currentIndex !== idx ? <Check size={16} strokeWidth={3} /> : idx + 1}
                         </button>
@@ -586,7 +586,7 @@ const StudyPage = () => {
           <button
             onClick={submitExam}
             disabled={isGraded}
-            className="w-full bg-[#3BAA7D] hover:bg-[#31926b] text-white py-6 rounded-[12px] transition-colors font-black text-lg disabled:opacity-50 disabled:cursor-not-allowed   shrink-0 tracking-tight"
+            className="w-full bg-[#3BAA7D] hover:bg-[#31926b] text-white py-6 rounded-[24px] transition-colors font-black text-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-[#3BAA7D]/20 shrink-0 tracking-tight"
           >
             {isGraded ? '채점 완료' + (isRetakeMode ? '' : ' (오답노트 저장됨)') : '답안 최종 제출하기'}
           </button>
@@ -615,7 +615,7 @@ const QuestionBody = ({ text }) => {
         i % 2 === 1 ? (
           <pre
             key={i}
-            className="my-5 p-5 rounded-[8px] bg-[#2C313A] text-[#E6E8EB] text-[13px] md:text-sm leading-relaxed font-mono overflow-x-auto whitespace-pre"
+            className="my-5 p-5 rounded-[20px] bg-[#2C313A] text-[#E6E8EB] text-[13px] md:text-sm leading-relaxed font-mono overflow-x-auto whitespace-pre"
           >
             {/* 들여쓰기가 의미를 갖는 문항이 있으므로 공백을 보존한다 */}
             <code>{part.replace(/\n+$/, '')}</code>
@@ -624,7 +624,7 @@ const QuestionBody = ({ text }) => {
           part.trim() && (
             <h3
               key={i}
-              className="text-2xl md:text-3xl font-black leading-snug text-[#222222] break-keep"
+              className="text-2xl md:text-3xl font-black leading-snug text-[#4A4F58] break-keep"
             >
               {part.trim()}
             </h3>
@@ -639,7 +639,7 @@ const QuestionBody = ({ text }) => {
 // 재사용 가능한 옵션 컴포넌트
 // ==========================================
 const Option = ({ text, isSelected, isActualAnswer, isGraded, onClick }) => {
-  let btnClass = 'bg-white border-[#DDDDDD] hover:border-[#FF385C] text-[#222222] hover:bg-[#F7F7F7]' // 기본상태
+  let btnClass = 'bg-white border-gray-200 hover:border-[#3478B8] text-[#4A4F58] hover:bg-gray-50' // 기본상태
 
   if (isGraded) {
     if (isActualAnswer) {
@@ -647,22 +647,22 @@ const Option = ({ text, isSelected, isActualAnswer, isGraded, onClick }) => {
     } else if (isSelected && !isActualAnswer) {
       btnClass = 'bg-[#E61E2B]/5 border-[#E61E2B]/50 text-[#E61E2B]'
     } else {
-      btnClass = 'bg-[#F7F7F7] border-[#DDDDDD] text-[#717171] opacity-60'
+      btnClass = 'bg-gray-50 border-gray-100 text-gray-300 opacity-60'
     }
   } else if (isSelected) {
-    btnClass = 'border-[#FF385C] bg-[#FF385C]/5 text-[#FF385C]  '
+    btnClass = 'border-[#3478B8] bg-[#3478B8]/5 text-[#3478B8] shadow-inner shadow-[#3478B8]/5'
   }
 
   return (
     <button
       onClick={onClick}
       disabled={isGraded}
-      className={`w-full p-5 text-left rounded-[8px] transition-all border-2 flex justify-between items-center group ${btnClass}`}
+      className={`w-full p-5 text-left rounded-[20px] transition-all border-2 flex justify-between items-center group ${btnClass}`}
     >
       <span className="font-bold text-[15px]">{text}</span>
       {isGraded && isActualAnswer && <CheckCircle size={22} className="shrink-0 ml-4 text-[#3BAA7D]" />}
       {isGraded && isSelected && !isActualAnswer && <XCircle size={22} className="shrink-0 ml-4 text-[#E61E2B]" />}
-      {!isGraded && isSelected && <CheckCircle size={22} className="shrink-0 ml-4 text-[#FF385C]" />}
+      {!isGraded && isSelected && <CheckCircle size={22} className="shrink-0 ml-4 text-[#3478B8]" />}
     </button>
   )
 }

@@ -16,28 +16,22 @@ import ExamLocationsPage from '../pages/ExamLocationsPage'
 import NotFoundPage from '../pages/NotFoundPage'
 
 function AppRouter() {
-  const ZoomWrapper = ({ children }) => (
-    <div style={{ zoom: 1.5 }}>
-      {children}
-    </div>
-  )
-
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
-      <Route path="/study" element={<ZoomWrapper><StudyPage /></ZoomWrapper>} />
-      <Route path="/exam-locations" element={<ZoomWrapper><ExamLocationsPage /></ZoomWrapper>} />
-      <Route path="/calendar" element={<ZoomWrapper><CalendarPage /></ZoomWrapper>} />
-      <Route path="/community" element={<ZoomWrapper><CommunityPage /></ZoomWrapper>} />
-      <Route path="/profile" element={<ZoomWrapper><ProfilePage /></ZoomWrapper>} />
-      <Route path="/login" element={<ZoomWrapper><LoginPage /></ZoomWrapper>} />
-      <Route path="/register" element={<ZoomWrapper><RegisterPage /></ZoomWrapper>} />
-      <Route path="/admin" element={<ZoomWrapper><AdminPage /></ZoomWrapper>} />
-      <Route path="/find-password" element={<ZoomWrapper><FindPasswordPage /></ZoomWrapper>} />
+      <Route path="/study" element={<StudyPage />} />
+      <Route path="/exam-locations" element={<ExamLocationsPage />} />
+      <Route path="/calendar" element={<CalendarPage />} />
+      <Route path="/community" element={<CommunityPage />} />
+      <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/admin" element={<AdminPage />} />
+      <Route path="/find-password" element={<FindPasswordPage />} />
       <Route path="/auth/kakao/callback" element={<KakaoCallbackPage />} />
       <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
-      <Route path="/recommend" element={<ZoomWrapper><RecommendationPage /></ZoomWrapper>} />
-      <Route path="/cover-letter" element={<ZoomWrapper><CoverLetterPage /></ZoomWrapper>} />
+      <Route path="/recommend" element={<RecommendationPage />} />
+      <Route path="/cover-letter" element={<CoverLetterPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
