@@ -667,16 +667,34 @@ const CommunityPage = () => {
           {/* 사진 첨부 영역 */}
           <div className="flex flex-col md:flex-row gap-2 md:gap-0 border-b border-gray-100 pb-5">
             <div className="md:w-32 shrink-0 font-bold text-slate-800 flex items-center md:pt-2">사진 첨부</div>
-            <div className="flex-1 flex flex-wrap items-center gap-3 min-w-0">
-              <label className="cursor-pointer flex items-center justify-center bg-white border border-gray-300 hover:border-[#007BFF] hover:text-[#007BFF] text-gray-600 px-4 py-2 rounded-sm transition font-bold text-sm">
-                <ImageIcon size={16} className="mr-2" /> 컴퓨터에서 사진 찾기
-                <input type="file" accept="image/*" className="hidden" onChange={(e) => setAttachedImage(e.target.files[0] || null)} />
-              </label>
+            <div className="flex-1 flex flex-col gap-3 min-w-0">
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="cursor-pointer flex items-center justify-center bg-white border border-gray-300 hover:border-[#007BFF] hover:text-[#007BFF] text-gray-600 px-4 py-2 rounded-sm transition font-bold text-sm">
+                  <ImageIcon size={16} className="mr-2" /> 컴퓨터에서 사진 찾기
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => setAttachedImage(e.target.files[0] || null)} />
+                </label>
+                {attachedImage && (
+                  <button
+                    type="button"
+                    onClick={() => setAttachedImage(null)}
+                    className="text-xs text-red-500 hover:underline font-bold"
+                  >
+                    첨부 취소
+                  </button>
+                )}
+              </div>
               {attachedImage && (
-                <span className="text-[#007BFF] font-medium text-sm flex items-center min-w-0 break-all">
-                  <span className="w-2 h-2 rounded-full bg-[#007BFF] mr-2 shrink-0"></span>
-                  {attachedImage.name} (첨부 완료)
-                </span>
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200 w-fit max-w-full">
+                  <img
+                    src={URL.createObjectURL(attachedImage)}
+                    alt="미리보기"
+                    className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+                  />
+                  <div className="min-w-0 pr-2">
+                    <p className="text-xs font-bold text-slate-700 truncate max-w-xs">{attachedImage.name}</p>
+                    <p className="text-[11px] text-[#007BFF] font-semibold mt-0.5">정상적으로 첨부되었습니다</p>
+                  </div>
+                </div>
               )}
             </div>
           </div>
@@ -779,8 +797,19 @@ const CommunityPage = () => {
                   <img
                     src={getFullImageUrl(selectedPost.imageUrl)}
                     alt="현재 첨부 이미지"
+                    onError={(e) => {
+                      e.target.style.display = 'none'
+                      const fallback = e.target.nextElementSibling
+                      if (fallback) fallback.style.display = 'flex'
+                    }}
                     className="h-16 w-16 object-cover rounded border"
                   />
+                  <div
+                    style={{ display: 'none' }}
+                    className="h-16 w-16 bg-gray-100 rounded border border-gray-200 items-center justify-center text-gray-400 text-[10px] text-center"
+                  >
+                    이미지 없음
+                  </div>
                   <div className="flex-1">
                     <p className="text-xs text-gray-500 font-semibold">현재 첨부된 이미지</p>
                     <label className="mt-1 flex items-center text-xs text-red-500 cursor-pointer font-bold">
@@ -905,8 +934,20 @@ const CommunityPage = () => {
               <img
                 src={getFullImageUrl(selectedPost.imageUrl)}
                 alt="첨부 이미지"
+                onError={(e) => {
+                  e.target.style.display = 'none'
+                  const fallback = e.target.nextElementSibling
+                  if (fallback) fallback.style.display = 'flex'
+                }}
                 className="max-w-full rounded-xl border border-gray-200 shadow-sm"
               />
+              <div
+                style={{ display: 'none' }}
+                className="items-center gap-2 text-xs text-gray-400 bg-gray-50 border border-dashed border-gray-200 p-4 rounded-xl"
+              >
+                <ImageIcon size={16} />
+                첨부 이미지를 불러올 수 없습니다 (파일이 만료되었거나 다른 환경에서 업로드되었습니다).
+              </div>
             </div>
           )}
         </div>

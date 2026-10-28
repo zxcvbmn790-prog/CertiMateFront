@@ -19,6 +19,22 @@ const CERT_KEYWORDS = [
   '컴퓨터활용능력'
 ]
 
+const CERT_ALIASES = {
+  '정처기': '정보처리기사',
+  '정처산기': '정보처리산업기사',
+  '컴활': '컴퓨터활용능력',
+  '컴활1급': '컴퓨터활용능력',
+  '컴활2급': '컴퓨터활용능력',
+  '리마': '리눅스마스터',
+  '네관': '네트워크관리사',
+  '빅분기': '빅데이터분석기사',
+  '보안기사': '정보보안기사',
+  '전기': '전기기사',
+  'sqld': 'SQLD',
+  'adsp': 'ADsP',
+  'aws': 'AWS SAA',
+}
+
 const ROLE_FILTERS = [
   '전체',
   '백엔드',
@@ -97,11 +113,55 @@ const JobMatchingPage = () => {
     setSelectedRole(role)
   }
 
+  const resolveCertKeyword = (rawInput) => {
+    const trimmed = rawInput.trim()
+    if (!trimmed) return null
+    const lower = trimmed.toLowerCase()
+
+    // 1. 별칭 매핑 확인
+    if (CERT_ALIASES[lower]) {
+      return CERT_ALIASES[lower]
+    }
+
+    // 2. 전체 유효 자격증 목록
+    const validCerts = Array.from(new Set([
+      ...(jobData.myCertifications || []),
+      ...CERT_KEYWORDS,
+      '전기기사',
+      '정보처리산업기사',
+      '네트워크관리사 2급',
+      '리눅스마스터 1급',
+      '컴퓨터활용능력 1급',
+      '정보보안산업기사',
+      'AWS SAA'
+    ]))
+
+    // 3. 완전 일치 (대소문자 무시)
+    const exact = validCerts.find(c => c.toLowerCase() === lower)
+    if (exact) return exact
+
+    // 4. 부분 일치 (예: '정보처리' -> '정보처리기사', 'sql' -> 'SQLD')
+    const partial = validCerts.find(c => 
+      c.toLowerCase().includes(lower) || lower.includes(c.toLowerCase())
+    )
+    if (partial) return partial
+
+    return null
+  }
+
   const handleCustomSearch = (e) => {
     e.preventDefault()
     if (!customSearch.trim()) return
+
+    const matched = resolveCertKeyword(customSearch)
+    if (!matched) {
+      alert(`'${customSearch.trim()}'(은)는 등록된 자격증 종목이 아닙니다.\n올바른 자격증 명칭(예: 정보처리기사, SQLD, ADsP, 리눅스마스터 등)을 입력해주세요.`)
+      return
+    }
+
     setPage(1)
-    setSelectedCert(customSearch.trim())
+    setSelectedCert(matched)
+    setCustomSearch('')
   }
 
   const handleGoCoverLetter = (job) => {
@@ -237,14 +297,20 @@ const JobMatchingPage = () => {
             </div>
 
             {/* 직접 키워드 검색 */}
-            <form onSubmit={handleCustomSearch} className="relative min-w-[260px]">
+            <form onSubmit={handleCustomSearch} className="relative min-w-[280px]">
               <input
                 type="text"
+                list="cert-search-suggestions"
                 value={customSearch}
                 onChange={(e) => setCustomSearch(e.target.value)}
-                placeholder="자격증 또는 기업·직무 검색..."
+                placeholder="자격증 종목 검색 (예: 정보처리기사, SQLD)..."
                 className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-2.5 pl-4 pr-10 text-xs font-bold outline-none focus:border-[#3478B8] transition"
               />
+              <datalist id="cert-search-suggestions">
+                {allCertTabs.map(cert => (
+                  <option key={cert} value={cert} />
+                ))}
+              </datalist>
               <button
                 type="submit"
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-[#3478B8] hover:text-[#2e69a3]"

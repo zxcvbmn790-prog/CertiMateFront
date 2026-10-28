@@ -92,10 +92,23 @@ const CalendarPage = () => {
   };
 
   const handleSaveNotifySettings = async () => {
+    if (localStorage.getItem('isLoggedIn') !== 'true') {
+      alert('로그인이 필요한 기능입니다.');
+      navigate('/login');
+      return;
+    }
     if (selectedDays.length === 0) {
       alert('최소 1개 이상의 알림 주기를 선택해주세요.');
       return;
     }
+
+    // 권한 동의(연동)가 안 되어 있으면 권한 설정 진행 후 카톡 일정 즉시 발송
+    if (!notifyStatus.connected) {
+      handleConnectKakao();
+      return;
+    }
+
+    // 이미 권한 동의가 되어 있으면 주기 및 시간만 저장
     try {
       const daysStr = selectedDays.join(',');
       await userApi.updateKakaoNotificationSettings({
@@ -504,27 +517,13 @@ const CalendarPage = () => {
                 </p>
               </div>
 
-              {/* 이미 연동된 경우 주기/시간만 바로 저장하는 버튼 */}
-              {notifyStatus.connected && (
-                <button
-                  type="button"
-                  onClick={handleSaveNotifySettings}
-                  className="w-full bg-[#3478B8] text-white py-3.5 rounded-xl font-black text-sm flex items-center justify-center shadow-md hover:bg-[#2e69a3] transition"
-                >
-                  알림 주기 · 시간 설정 저장하기
-                </button>
-              )}
-
-              {/* 카카오 연동 및 권한 동의 (동의 즉시 시험 일정 카톡 발신) */}
+              {/* 저장하기 버튼 (미동의 시 권한 동의 후 카톡 발송, 동의 완료 시 주기·시간만 저장) */}
               <button
                 type="button"
-                onClick={handleConnectKakao}
-                className="w-full bg-[#FEE500] text-[#3c1e1e] py-3.5 rounded-xl font-black text-sm flex items-center justify-center shadow-sm hover:opacity-90 transition"
+                onClick={handleSaveNotifySettings}
+                className="w-full bg-[#3478B8] text-white py-3.5 rounded-xl font-black text-sm flex items-center justify-center shadow-md hover:bg-[#2e69a3] transition"
               >
-                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e3/KakaoTalk_logo.svg" alt="kakao" className="w-4 h-4 mr-2" />
-                {notifyStatus.connected
-                  ? '권한 재동의 및 지금 시험 일정 카톡 받기'
-                  : '카카오톡 권한 동의하고 시험 일정 카톡 받기'}
+                저장하기
               </button>
             </div>
           </div>

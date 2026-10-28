@@ -117,7 +117,7 @@ const HomePage = () => {
               className="flex-1 bg-white rounded-[28px] sm:rounded-[32px] border border-gray-100 p-5 sm:p-7 cursor-pointer group shadow-sm hover:shadow-md transition-all hover:-translate-y-1 flex flex-col justify-between relative"
             >
               <div>
-                <h3 className="text-base sm:text-lg font-black text-slate-800 mb-1 break-keep">추천 자격증 종목</h3>
+                <h3 className="text-base sm:text-lg font-black text-slate-800 mb-1 break-keep">자격증 추천</h3>
                 <div className="flex flex-col gap-1 mt-4">
                   <span className="text-xs text-gray-500 font-medium flex items-center hover:text-[#3BAA7D]">IT 자격증 정보 <ArrowRight size={10} className="ml-1"/></span>
                   <span className="text-xs text-gray-500 font-medium flex items-center hover:text-[#3BAA7D]">국가공인 자격증 <ArrowRight size={10} className="ml-1"/></span>
@@ -160,7 +160,7 @@ const HomePage = () => {
           <QuickLink icon={<Briefcase />} label="취업연계" onClick={() => handleNav('/jobs')} />
           <QuickLink icon={<FileText />} label="자소서" onClick={() => handleNav('/cover-letter')} />
           <QuickLink icon={<Target />} label="학습진도" onClick={() => handleNav('/profile')} />
-          <QuickLink icon={<MessageSquare />} label="합격후기" onClick={() => handleNav('/community')} />
+          <QuickLink icon={<MessageSquare />} label="커뮤니티" onClick={() => handleNav('/community')} />
           <QuickLink icon={<Info />} label="자료실" onClick={() => {}} />
           <QuickLink icon={<Phone />} label="고객지원" onClick={() => {}} />
         </div>

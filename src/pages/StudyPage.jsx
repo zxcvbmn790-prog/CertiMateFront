@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import {
   Cpu, Timer, CheckCircle, XCircle, Search, BookOpen,
@@ -34,6 +34,7 @@ const StudyPage = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [explainingId, setExplainingId] = useState(null) // AI 해설 생성 중인 문제의 learnId
   const [isOmrOpen, setIsOmrOpen] = useState(false) // 모바일 답안 현황 바텀시트
+  const autoAdvanceTimerRef = useRef(null)
 
   // 바텀시트가 열려 있는 동안 뒤 페이지가 스크롤되지 않게 막는다
   useEffect(() => {
@@ -206,9 +207,17 @@ const StudyPage = () => {
     if (isGraded) return
     setUserAnswers(prev => ({ ...prev, [learnId]: value }))
 
-    if (currentIndex < questions.length - 1) {
-      setTimeout(() => setCurrentIndex(prev => prev + 1), 300)
+    // 광클 시 이전 문항 자동 이동 타이머를 취소하여 문제가 건너뛰어지거나 61번으로 초과 이동하는 것을 방지
+    if (autoAdvanceTimerRef.current) {
+      clearTimeout(autoAdvanceTimerRef.current)
     }
+
+    autoAdvanceTimerRef.current = setTimeout(() => {
+      setCurrentIndex(prev => {
+        if (!questions || questions.length === 0) return 0
+        return Math.min(prev + 1, questions.length - 1)
+      })
+    }, 300)
   }
 
   const submitExam = async () => {
@@ -284,11 +293,16 @@ const StudyPage = () => {
   }
 
   const goToNext = () => {
-    if (currentIndex < questions.length - 1) setCurrentIndex(prev => prev + 1)
+    if (autoAdvanceTimerRef.current) clearTimeout(autoAdvanceTimerRef.current)
+    setCurrentIndex(prev => {
+      if (!questions || questions.length === 0) return 0
+      return Math.min(prev + 1, questions.length - 1)
+    })
   }
 
   const goToPrev = () => {
-    if (currentIndex > 0) setCurrentIndex(prev => prev - 1)
+    if (autoAdvanceTimerRef.current) clearTimeout(autoAdvanceTimerRef.current)
+    setCurrentIndex(prev => Math.max(prev - 1, 0))
   }
 
   // ==========================================
@@ -380,7 +394,8 @@ const StudyPage = () => {
     )
   }
 
-  const q = questions[currentIndex]
+  const safeIndex = questions.length > 0 ? Math.min(Math.max(0, currentIndex), questions.length - 1) : 0
+  const q = questions[safeIndex]
   const result = isGraded ? computeResult() : null
 
   // OMR 답안 현황을 과목별로 묶는다 (문항은 이미 과목 순서대로 정렬되어 옴)
@@ -394,7 +409,7 @@ const StudyPage = () => {
 
   const omrBtnClass = (question, idx) => {
     const isAnswered = !!userAnswers[question.learnId]
-    const isCurrent = currentIndex === idx
+    const isCurrent = safeIndex === idx
     if (isGraded) {
       const isCorrect = isCorrectAnswer(question, userAnswers[question.learnId])
       if (isCorrect) return 'bg-[#3BAA7D]/10 border-[#3BAA7D]/30 text-[#3BAA7D]'
@@ -461,11 +476,11 @@ const StudyPage = () => {
                   <Timer size={14} className="inline mr-1 -mt-0.5" />{formatTime(timeLeft)}
                 </div>
               )}
-              <div className="text-xs font-black text-gray-400 tracking-tighter mb-1.5">진행률 {currentIndex + 1} / {questions.length}</div>
+              <div className="text-xs font-black text-gray-400 tracking-tighter mb-1.5">진행률 {safeIndex + 1} / {questions.length}</div>
               <div className="w-20 md:w-32 bg-gray-100 rounded-full h-1.5 overflow-hidden">
                 <div
                   className="bg-[#3478B8] h-1.5 rounded-full transition-all duration-300"
-                  style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
+                  style={{ width: `${((safeIndex + 1) / questions.length) * 100}%` }}
                 ></div>
               </div>
             </div>
@@ -477,7 +492,7 @@ const StudyPage = () => {
                 <div className="flex flex-wrap justify-between items-center gap-2 mb-4 md:mb-6">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-[12px] font-black text-[#3478B8] uppercase tracking-widest bg-[#3478B8]/10 px-4 py-2 rounded-full flex items-center">
-                      <Zap size={14} className="mr-1.5" /> Question {String(currentIndex + 1).padStart(2, '0')}
+                      <Zap size={14} className="mr-1.5" /> Question {String(safeIndex + 1).padStart(2, '0')}
                     </span>
                     {q.subjectNum > 0 && (
                       <span className="text-[12px] font-black text-[#D9A23A] bg-[#D9A23A]/10 px-4 py-2 rounded-full">
@@ -550,14 +565,14 @@ const StudyPage = () => {
           <div className="flex justify-between items-center space-x-3 md:space-x-4">
             <button
               onClick={goToPrev}
-              disabled={currentIndex === 0}
+              disabled={safeIndex <= 0}
               className="flex items-center shrink-0 px-4 md:px-8 py-4 md:py-5 bg-white border border-gray-200 hover:bg-gray-50 text-[#4A4F58] rounded-2xl transition disabled:opacity-50 disabled:cursor-not-allowed font-black"
             >
               <ChevronLeft className="mr-1 md:mr-2" size={20} /> 이전<span className="hidden sm:inline">&nbsp;문항</span>
             </button>
             <button
               onClick={goToNext}
-              disabled={currentIndex === questions.length - 1}
+              disabled={safeIndex >= questions.length - 1}
               className="flex items-center flex-1 justify-center px-4 md:px-8 py-4 md:py-5 bg-[#3478B8]/10 hover:bg-[#3478B8]/20 border border-[#3478B8]/20 text-[#3478B8] rounded-2xl transition font-black disabled:opacity-30 disabled:cursor-not-allowed"
             >
               다음 문항 <ChevronRight className="ml-2" size={20} />
