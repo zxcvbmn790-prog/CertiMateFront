@@ -76,7 +76,7 @@ const StudyPage = () => {
       setCurrentIndex(0)
       setTimeLeft(5400) // 90 mins
       setIsRetakeMode(true)
-      setSelectedCert({ id: 0, name: `[오답 다시풀기] ${session.timeLabel} 회차`, category: '오답노트', questions: parsedData.length, difficulty: 'N/A' })
+      setSelectedCert({ id: 0, name: `[오답 다시풀기] ${session.timeLabel} 회차`, questions: parsedData.length })
     } else if (location.state && location.state.viewNotesSession) {
       // 오답노트 보기
       const session = location.state.viewNotesSession
@@ -103,7 +103,7 @@ const StudyPage = () => {
       setCurrentIndex(0)
       setTimeLeft(0)
       setIsRetakeMode(false)
-      setSelectedCert({ id: 0, name: `[오답노트] ${session.timeLabel} 회차`, category: '오답노트', questions: parsedData.length, difficulty: 'N/A' })
+      setSelectedCert({ id: 0, name: `[오답노트] ${session.timeLabel} 회차`, questions: parsedData.length })
     }
   }, [location.state])
 
@@ -116,10 +116,7 @@ const StudyPage = () => {
         const list = res.data.map((c) => ({
           id: c.certId,
           name: c.certName,
-          category: c.agency || '자격증',
-          difficulty: c.difficulty || '',
           questions: c.totalQuestions,
-          subjects: [c.subject1, c.subject2, c.subject3],
         }))
         setCertifications(list)
       })
@@ -349,33 +346,10 @@ const StudyPage = () => {
                   className={`p-6 md:p-8 rounded-[24px] border-2 transition-all cursor-pointer group hover:shadow-xl hover:shadow-[#3478B8]/5 bg-white
                     ${isSelected ? 'border-[#3478B8] shadow-lg shadow-[#3478B8]/10' : 'border-gray-100 hover:border-[#3478B8]'}`}
                 >
-                  <div className="flex justify-between items-start mb-4 md:mb-6">
-                    <div className="flex space-x-2">
-                      <span className={`text-[9px] font-black px-2.5 py-1.5 rounded-lg border uppercase tracking-tighter
-                        ${isSelected ? 'bg-[#3478B8] text-white border-[#3478B8]' : 'bg-gray-50 text-gray-400 border-gray-100'}`}
-                      >
-                        #{cert.category}
-                      </span>
-                    </div>
-                    {cert.difficulty && (
-                      <div className="text-right">
-                        <span className={`text-[11px] font-black ${isSelected ? 'text-[#3478B8]' : 'text-[#3BAA7D]'}`}>{cert.difficulty}</span>
-                      </div>
-                    )}
-                  </div>
                   <h4 className={`text-xl md:text-2xl font-black mb-3 break-keep transition-colors ${isSelected ? 'text-[#3478B8]' : 'group-hover:text-[#3478B8]'}`}>{cert.name}</h4>
-                  <div className="flex items-center text-xs text-gray-400 font-bold space-x-4 mb-3">
+                  <div className="flex items-center text-xs text-gray-400 font-bold">
                     <span className="flex items-center"><BookOpen size={14} className="mr-1.5 text-gray-300" /> 총 {cert.questions}문항</span>
                   </div>
-                  {cert.subjects && (
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {cert.subjects.map((n, i) => (
-                        <span key={i} className="text-[10px] font-black px-2 py-1 rounded-md bg-gray-50 text-gray-400 border border-gray-100">
-                          {i + 1}과목 {n}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
               )
             })}
