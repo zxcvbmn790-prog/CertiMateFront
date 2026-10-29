@@ -191,7 +191,8 @@ const StudyPage = () => {
       setIsRetakeMode(false)
       setUserAnswers({})
       setCurrentIndex(0)
-      setTimeLeft(5400)
+      // 실제 필기시험처럼 문항당 1.5분, 최소 90분 (정보처리기사 100문항 150분, 산업기사·SQLD·ADsP 90분)
+      setTimeLeft(Math.max(5400, parsedData.length * 90))
     } catch (error) {
       console.error('문제 로딩 실패:', error)
       alert('백엔드 서버와 연결할 수 없습니다.')
