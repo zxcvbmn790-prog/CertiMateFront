@@ -95,7 +95,7 @@ const CertManagerModal = ({ isOpen, onClose, onUpdated }) => {
       if (onUpdated) onUpdated()
     } catch (err) {
       console.error(err)
-      alert('보유 자격증 등록에 실패했습니다. 로그인 상태를 확인해주세요.')
+      alert(err.response?.data?.message || '보유 자격증 등록에 실패했습니다. 로그인 상태를 확인해주세요.')
     } finally {
       setSubmittingAcquired(false)
     }
@@ -136,7 +136,7 @@ const CertManagerModal = ({ isOpen, onClose, onUpdated }) => {
       if (onUpdated) onUpdated()
     } catch (err) {
       console.error(err)
-      alert('목표 시험 일정 등록에 실패했습니다. 로그인 상태를 확인해주세요.')
+      alert(err.response?.data?.message || '목표 시험 일정 등록에 실패했습니다. 로그인 상태를 확인해주세요.')
     } finally {
       setSubmittingTarget(false)
     }

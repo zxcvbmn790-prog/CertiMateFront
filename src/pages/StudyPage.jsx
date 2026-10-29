@@ -36,6 +36,11 @@ const StudyPage = () => {
   const [isOmrOpen, setIsOmrOpen] = useState(false) // 모바일 답안 현황 바텀시트
   const [wrongOnly, setWrongOnly] = useState(false) // 채점 후 이전/다음 이동을 틀린 문제로만 제한
   const autoAdvanceTimerRef = useRef(null)
+  const lastAutoAdvanceAtRef = useRef(0) // 자동 이동 직후 들어온 클릭을 걸러내기 위한 시각
+  const clearAutoAdvance = () => {
+    if (autoAdvanceTimerRef.current) clearTimeout(autoAdvanceTimerRef.current)
+    autoAdvanceTimerRef.current = null
+  }
 
   // 바텀시트가 열려 있는 동안 뒤 페이지가 스크롤되지 않게 막는다
   useEffect(() => {
@@ -176,6 +181,7 @@ const StudyPage = () => {
 
   const startExam = async () => {
     if (!selectedCert) return
+    clearAutoAdvance()
     setIsLoading(true)
 
     try {
@@ -205,23 +211,26 @@ const StudyPage = () => {
 
   const handleSelectAnswer = (learnId, value) => {
     if (isGraded) return
+    // 자동 이동 직후의 클릭은 사용자가 이전 문제를 누르려던 것이므로 새 문제에 답으로 찍지 않는다(광클 시 문제 건너뜀 방지)
+    if (Date.now() - lastAutoAdvanceAtRef.current < 250) return
     setUserAnswers(prev => ({ ...prev, [learnId]: value }))
 
-    // 광클 시 이전 문항 자동 이동 타이머를 취소하여 문제가 건너뛰어지거나 61번으로 초과 이동하는 것을 방지
-    if (autoAdvanceTimerRef.current) {
-      clearTimeout(autoAdvanceTimerRef.current)
-    }
-
+    const answeredIdx = questions.findIndex(qq => qq.learnId === learnId)
+    clearAutoAdvance()
     autoAdvanceTimerRef.current = setTimeout(() => {
+      autoAdvanceTimerRef.current = null
+      // 답을 고른 그 문제가 아직 보이고 있을 때만 다음 문제로 넘어간다(그 사이 이동했으면 그대로 둔다)
       setCurrentIndex(prev => {
-        if (!questions || questions.length === 0) return 0
-        return Math.min(prev + 1, questions.length - 1)
+        if (prev !== answeredIdx) return prev
+        lastAutoAdvanceAtRef.current = Date.now()
+        return Math.min(answeredIdx + 1, questions.length - 1)
       })
     }, 300)
   }
 
   const submitExam = async () => {
     if (isGraded) return
+    clearAutoAdvance()
 
     if (Object.keys(userAnswers).length < questions.length && timeLeft > 0) {
       if (!window.confirm(`아직 풀지 않은 문제가 있습니다. (${Object.keys(userAnswers).length}/${questions.length})\n그래도 제출하시겠습니까?`)) return
@@ -304,7 +313,7 @@ const StudyPage = () => {
   const prevWrong = [...wrongIndexes].reverse().find(i => i < currentIndex)
 
   const goToNext = () => {
-    if (autoAdvanceTimerRef.current) clearTimeout(autoAdvanceTimerRef.current)
+    clearAutoAdvance()
     if (reviewWrong) { if (nextWrong !== undefined) setCurrentIndex(nextWrong); return }
     setCurrentIndex(prev => {
       if (!questions || questions.length === 0) return 0
@@ -313,7 +322,7 @@ const StudyPage = () => {
   }
 
   const goToPrev = () => {
-    if (autoAdvanceTimerRef.current) clearTimeout(autoAdvanceTimerRef.current)
+    clearAutoAdvance()
     if (reviewWrong) { if (prevWrong !== undefined) setCurrentIndex(prevWrong); return }
     setCurrentIndex(prev => Math.max(prev - 1, 0))
   }
