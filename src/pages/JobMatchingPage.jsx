@@ -63,6 +63,8 @@ const JobMatchingPage = () => {
   const [customSearch, setCustomSearch] = useState('')
   const [page, setPage] = useState(1)
   const [isCertModalOpen, setIsCertModalOpen] = useState(false)
+  // 채용공고 조회는 로그인 필수 (서버가 비로그인·토큰 만료를 401로 막는다)
+  const [needLogin, setNeedLogin] = useState(false)
 
   const openCertManager = () => {
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'
@@ -75,6 +77,12 @@ const JobMatchingPage = () => {
   }
 
   const fetchJobs = (keywordParam, roleParam, pageParam) => {
+    if (localStorage.getItem('isLoggedIn') !== 'true') {
+      setNeedLogin(true)
+      setLoading(false)
+      return
+    }
+    setNeedLogin(false)
     setLoading(true)
     const roleQuery = roleParam === '인프라·보안' ? '보안' : roleParam
     jobApi.getRecommendations({
@@ -92,6 +100,7 @@ const JobMatchingPage = () => {
       })
       .catch(err => {
         console.error('채용공고 조회 실패:', err)
+        if ([401, 403].includes(err.response?.status)) setNeedLogin(true)
       })
       .finally(() => {
         setLoading(false)
@@ -362,7 +371,17 @@ const JobMatchingPage = () => {
           </button>
         </div>
 
-        {loading ? (
+        {needLogin ? (
+          <div className="bg-white rounded-[32px] p-12 sm:p-20 text-center border border-gray-100 shadow-sm flex flex-col items-center justify-center">
+            <p className="text-base font-black text-[#4A4F58]">로그인하면 내 자격증에 맞는 채용공고를 보여드려요.</p>
+            <button
+              onClick={() => navigate('/login')}
+              className="mt-6 px-8 py-3 bg-[#3478B8] text-white rounded-2xl font-black text-sm hover:bg-[#2e69a3] transition"
+            >
+              로그인하러 가기
+            </button>
+          </div>
+        ) : loading ? (
           <div className="bg-white rounded-[32px] p-20 text-center border border-gray-100 shadow-sm flex flex-col items-center justify-center">
             <Loader2 className="w-10 h-10 text-[#3478B8] animate-spin mb-4" />
             <p className="text-base font-black text-[#4A4F58]">
