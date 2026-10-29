@@ -1,13 +1,16 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import {
-  Cpu, Timer, CheckCircle, XCircle, Search, BookOpen,
+  Cpu, Timer, CheckCircle, XCircle, BookOpen,
   RotateCcw, ChevronLeft, ChevronRight, ChevronUp, Check, Zap, X, LayoutGrid
 } from 'lucide-react'
 import { examApi } from '../api/examApi'
 import { authApi } from '../api/authApi'
 // 채점 비교는 반드시 이 함수 하나만 쓴다 (점수 계산·OMR·정답 배지·오답노트 저장 공통).
 import { isCorrectAnswer } from '../utils/grading'
+
+// 실제 필기시험처럼 문항당 1.5분, 최소 90분 (정보처리기사 100문항 150분, 산업기사·SQLD·ADsP 90분)
+const examMinutes = (questionCount) => Math.max(90, Math.round(questionCount * 1.5))
 
 const LOGIN_REQUIRED_MSG = 'AI 해설은 로그인 후 이용할 수 있어요.'
 const isAuthError = (error) => [401, 403].includes(error?.response?.status)
@@ -22,7 +25,6 @@ const StudyPage = () => {
       authApi.getMe().then((res) => setUserName(res.data.name || '')).catch(() => {})
     }
   }, [])
-  const [searchTerm, setSearchTerm] = useState('')
   const [selectedCert, setSelectedCert] = useState(null)
   const [isStarted, setIsStarted] = useState(false)
   const [isGraded, setIsGraded] = useState(false)
@@ -119,15 +121,13 @@ const StudyPage = () => {
           id: c.certId,
           name: c.certName,
           questions: c.totalQuestions,
+          examQuestions: c.examQuestions,
         }))
         setCertifications(list)
       })
       .catch((err) => console.error('자격증 목록 로딩 실패:', err))
   }, [])
 
-  const filteredCerts = certifications.filter(cert =>
-    cert.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
 
   // 과목별 채점 결과 계산 (정보처리산업기사: 과목당 40점 이상 & 전과목 평균 60점 이상 합격)
   const computeResult = () => {
@@ -174,12 +174,13 @@ const StudyPage = () => {
     return `${m}:${s}`
   }
 
-  const startExam = async () => {
-    if (!selectedCert) return
+  const startExam = async (cert) => {
+    if (!cert || isLoading) return
+    setSelectedCert(cert)
     setIsLoading(true)
 
     try {
-      const res = await examApi.getMockExam(selectedCert.id)
+      const res = await examApi.getMockExam(cert.id)
       const data = res.data
 
       const parsedData = data.map(q => ({
@@ -193,8 +194,7 @@ const StudyPage = () => {
       setIsRetakeMode(false)
       setUserAnswers({})
       setCurrentIndex(0)
-      // 실제 필기시험처럼 문항당 1.5분, 최소 90분 (정보처리기사 100문항 150분, 산업기사·SQLD·ADsP 90분)
-      setTimeLeft(Math.max(5400, parsedData.length * 90))
+      setTimeLeft(examMinutes(parsedData.length) * 60)
     } catch (error) {
       console.error('문제 로딩 실패:', error)
       alert('백엔드 서버와 연결할 수 없습니다.')
@@ -330,61 +330,43 @@ const StudyPage = () => {
   if (!isStarted) {
     return (
       <div className="min-h-screen bg-[#EAECEF] font-sans text-[#4A4F58]">
-        {/* Hero Section */}
-        <header className="relative py-12 md:py-24 px-4 md:px-6 bg-white border-b border-gray-200 overflow-hidden">
-          <div className="max-w-5xl mx-auto text-center relative z-10">
-            <h1 className="text-4xl md:text-6xl font-black mb-4 md:mb-8 leading-[1.15]">
-              <span className="text-[#3478B8]">실전 모의고사</span>
-            </h1>
-            <p className="text-gray-400 text-sm md:text-lg mb-8 md:mb-12 font-medium max-w-2xl mx-auto break-keep">
-              실제 시험과 동일한 환경에서 실력을 점검하고 취약점을 파악하세요.
+        <header className="bg-white border-b border-gray-200 px-4 md:px-6 py-8 md:py-12">
+          <div className="max-w-5xl mx-auto">
+            <h1 className="text-3xl md:text-4xl font-black text-[#3478B8]">실전 모의고사</h1>
+            <p className="text-gray-500 text-sm md:text-base mt-2 font-medium break-keep">
+              실제 시험과 같은 문항 수와 시간으로 풀고, 채점 후 틀린 문제와 해설을 확인하세요.
             </p>
-
-            {/* 통합 검색창 */}
-            <div className="relative max-w-3xl mx-auto flex flex-col md:flex-row shadow-xl md:shadow-2xl rounded-2xl md:rounded-3xl overflow-hidden border border-gray-100 bg-white">
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="자격증 검색 (예: 정보처리, SQLD...)"
-                  className="w-full p-4 md:p-6 pl-12 md:pl-14 outline-none text-base font-medium placeholder:text-gray-300"
-                />
-                <Search className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 text-gray-300" size={22} />
-              </div>
-            </div>
           </div>
         </header>
 
-        <main className="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-16 space-y-8 md:space-y-12">
-          {/* 자격증 리스트 그리드 */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
-            {filteredCerts.map((cert) => {
-              const isSelected = selectedCert?.id === cert.id
+        <main className="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-12">
+          {certifications.length === 0 && (
+            <p className="text-center text-sm font-bold text-gray-400 py-16">응시할 수 있는 자격증을 불러오는 중입니다...</p>
+          )}
+          <div className="grid sm:grid-cols-2 gap-4 md:gap-6">
+            {certifications.map((cert) => {
+              const isThisLoading = isLoading && selectedCert?.id === cert.id
               return (
-                <div
-                  key={cert.id}
-                  onClick={() => setSelectedCert(cert)}
-                  className={`p-6 md:p-8 rounded-[24px] border-2 transition-all cursor-pointer group hover:shadow-xl hover:shadow-[#3478B8]/5 bg-white
-                    ${isSelected ? 'border-[#3478B8] shadow-lg shadow-[#3478B8]/10' : 'border-gray-100 hover:border-[#3478B8]'}`}
-                >
-                  <h4 className={`text-xl md:text-2xl font-black mb-3 break-keep transition-colors ${isSelected ? 'text-[#3478B8]' : 'group-hover:text-[#3478B8]'}`}>{cert.name}</h4>
-                  <div className="flex items-center text-xs text-gray-400 font-bold">
-                    <span className="flex items-center"><BookOpen size={14} className="mr-1.5 text-gray-300" /> 총 {cert.questions}문항</span>
+                <div key={cert.id} className="bg-white rounded-[24px] border border-gray-100 p-6 md:p-7 flex flex-col justify-between gap-6 shadow-sm">
+                  <div>
+                    <h2 className="text-xl md:text-2xl font-black break-keep">{cert.name}</h2>
+                    <p className="mt-3 text-[15px] font-bold text-[#4A4F58] flex items-center gap-2">
+                      <Timer size={16} className="text-[#3478B8]" />
+                      {cert.examQuestions}문항 · {examMinutes(cert.examQuestions)}분
+                    </p>
+                    <p className="mt-1 text-xs font-medium text-gray-400">문제은행 {cert.questions}문항에서 무작위로 출제</p>
                   </div>
+                  <button
+                    onClick={() => startExam(cert)}
+                    disabled={isLoading}
+                    className="w-full py-3.5 rounded-2xl font-black text-[15px] bg-[#3478B8] text-white hover:bg-[#2e69a3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isThisLoading ? '시험지 준비 중...' : '시작하기'}
+                  </button>
                 </div>
               )
             })}
           </div>
-
-          <button
-            disabled={!selectedCert || isLoading}
-            onClick={startExam}
-            className={`w-full py-4 md:py-5 px-4 rounded-[24px] font-black text-base md:text-lg break-keep transition-all shadow-xl
-              ${selectedCert ? 'bg-[#3478B8] text-white shadow-[#3478B8]/20 hover:bg-[#2e69a3]' : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'}`}
-          >
-            {isLoading ? '시험지 준비 중...' : (selectedCert ? `"${selectedCert.name}" 학습 시작하기` : '응시할 종목을 선택해 주세요')}
-          </button>
         </main>
       </div>
     )
