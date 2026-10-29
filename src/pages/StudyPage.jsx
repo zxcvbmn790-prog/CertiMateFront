@@ -34,6 +34,7 @@ const StudyPage = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [explainingId, setExplainingId] = useState(null) // AI 해설 생성 중인 문제의 learnId
   const [isOmrOpen, setIsOmrOpen] = useState(false) // 모바일 답안 현황 바텀시트
+  const [wrongOnly, setWrongOnly] = useState(false) // 채점 후 이전/다음 이동을 틀린 문제로만 제한
   const autoAdvanceTimerRef = useRef(null)
 
   // 바텀시트가 열려 있는 동안 뒤 페이지가 스크롤되지 않게 막는다
@@ -99,6 +100,7 @@ const StudyPage = () => {
       setQuestions(parsedData)
       setIsStarted(true)
       setIsGraded(true)
+      setWrongOnly(false)
       setUserAnswers(answers)
       setCurrentIndex(0)
       setTimeLeft(0)
@@ -226,7 +228,10 @@ const StudyPage = () => {
     }
 
     setIsGraded(true)
-    setCurrentIndex(0)
+    setWrongOnly(false)
+    // 채점 직후에는 첫 번째 틀린 문제부터 보여준다 (모두 맞혔으면 1번)
+    const firstWrong = questions.findIndex(qq => !isCorrectAnswer(qq, userAnswers[qq.learnId]))
+    setCurrentIndex(firstWrong >= 0 ? firstWrong : 0)
 
     const historyPayload = questions.map(q => {
       const uAnswer = userAnswers[q.learnId]
@@ -290,8 +295,17 @@ const StudyPage = () => {
     }
   }
 
+  // 채점 후 틀린(미응답 포함) 문제의 위치 목록
+  const wrongIndexes = isGraded
+    ? questions.reduce((acc, qq, i) => (isCorrectAnswer(qq, userAnswers[qq.learnId]) ? acc : [...acc, i]), [])
+    : []
+  const reviewWrong = isGraded && wrongOnly && wrongIndexes.length > 0
+  const nextWrong = wrongIndexes.find(i => i > currentIndex)
+  const prevWrong = [...wrongIndexes].reverse().find(i => i < currentIndex)
+
   const goToNext = () => {
     if (autoAdvanceTimerRef.current) clearTimeout(autoAdvanceTimerRef.current)
+    if (reviewWrong) { if (nextWrong !== undefined) setCurrentIndex(nextWrong); return }
     setCurrentIndex(prev => {
       if (!questions || questions.length === 0) return 0
       return Math.min(prev + 1, questions.length - 1)
@@ -300,7 +314,14 @@ const StudyPage = () => {
 
   const goToPrev = () => {
     if (autoAdvanceTimerRef.current) clearTimeout(autoAdvanceTimerRef.current)
+    if (reviewWrong) { if (prevWrong !== undefined) setCurrentIndex(prevWrong); return }
     setCurrentIndex(prev => Math.max(prev - 1, 0))
+  }
+
+  const toggleWrongOnly = () => {
+    const next = !wrongOnly
+    setWrongOnly(next)
+    if (next && wrongIndexes.length > 0 && !wrongIndexes.includes(currentIndex)) setCurrentIndex(wrongIndexes[0])
   }
 
   // ==========================================
@@ -485,6 +506,19 @@ const StudyPage = () => {
                 <QuestionBody text={q.question} />
               </div>
 
+              {isGraded && (() => {
+                const mine = userAnswers[q.learnId]
+                const answerNo = q.optionsArray.findIndex(o => String(o) === String(q.answer)) + 1
+                const correct = isCorrectAnswer(q, mine)
+                return (
+                  <div className={`mb-4 md:mb-5 px-4 py-3 rounded-2xl text-sm font-black flex flex-wrap gap-x-4 gap-y-1
+                    ${correct ? 'bg-[#3BAA7D]/10 text-[#3BAA7D]' : 'bg-[#E61E2B]/5 text-[#E61E2B]'}`}>
+                    <span>내 답: {mine ? `${mine}번` : '미응답'}</span>
+                    <span className="text-[#3BAA7D]">정답: {answerNo > 0 ? `${answerNo}번` : '-'}</span>
+                  </div>
+                )
+              })()}
+
               <div className="space-y-3 md:space-y-4 flex-1">
                 {q.optionsArray.map((opt, optIdx) => (
                   <Option
@@ -540,17 +574,17 @@ const StudyPage = () => {
           <div className="flex justify-between items-center space-x-3 md:space-x-4">
             <button
               onClick={goToPrev}
-              disabled={safeIndex <= 0}
+              disabled={reviewWrong ? prevWrong === undefined : safeIndex <= 0}
               className="flex items-center shrink-0 px-4 md:px-8 py-4 md:py-5 bg-white border border-gray-200 hover:bg-gray-50 text-[#4A4F58] rounded-2xl transition disabled:opacity-50 disabled:cursor-not-allowed font-black"
             >
               <ChevronLeft className="mr-1 md:mr-2" size={20} /> 이전<span className="hidden sm:inline">&nbsp;문항</span>
             </button>
             <button
               onClick={goToNext}
-              disabled={safeIndex >= questions.length - 1}
+              disabled={reviewWrong ? nextWrong === undefined : safeIndex >= questions.length - 1}
               className="flex items-center flex-1 justify-center px-4 md:px-8 py-4 md:py-5 bg-[#3478B8]/10 hover:bg-[#3478B8]/20 border border-[#3478B8]/20 text-[#3478B8] rounded-2xl transition font-black disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              다음 문항 <ChevronRight className="ml-2" size={20} />
+              {reviewWrong ? '다음 틀린 문제' : '다음 문항'} <ChevronRight className="ml-2" size={20} />
             </button>
           </div>
         </div>
@@ -566,6 +600,16 @@ const StudyPage = () => {
                   {result.overall}<span className="text-2xl text-gray-400">점</span>
                 </div>
                 <div className="text-gray-300 text-xs font-bold mt-1">{result.totalCorrect} / {result.totalQ} 정답</div>
+                {wrongIndexes.length > 0 && (
+                  <button
+                    onClick={toggleWrongOnly}
+                    aria-pressed={wrongOnly}
+                    className={`mt-4 w-full py-3 rounded-2xl font-black text-sm transition-colors
+                      ${wrongOnly ? 'bg-[#E61E2B] text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                  >
+                    {wrongOnly ? '전체 문제 보기' : `틀린 문제 ${wrongIndexes.length}개만 보기`}
+                  </button>
+                )}
                 {result.hasSubjects && (
                   <div className={`inline-block mt-4 px-5 py-2 rounded-full font-black text-sm tracking-widest
                     ${result.passed ? 'bg-[#3BAA7D] text-white' : 'bg-[#E61E2B] text-white'}`}>
