@@ -56,7 +56,7 @@ const RegisterPage = () => {
           <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Award size={28} className="text-white" />
           </div>
-          <h2 className="text-2xl font-black tracking-tighter">자격한판 시작하기</h2>
+          <h2 className="text-2xl font-black tracking-tighter">CertiMate 시작하기</h2>
           <p className="text-[#EAECEF]/70 text-xs mt-2 font-medium">지능형 자격증 플랫폼에 오신 것을 환영합니다.</p>
         </div>
 

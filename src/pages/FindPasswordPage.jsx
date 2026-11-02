@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Mail, ArrowLeft, Send, Lock } from 'lucide-react'
 
 const FindPasswordPage = () => {
   const [email, setEmail] = useState('')
-  const navigate = useNavigate()
 
   const handleFindPassword = (e) => {
     e.preventDefault()
@@ -12,9 +11,8 @@ const FindPasswordPage = () => {
       alert('이메일을 입력해주세요.')
       return
     }
-    // 백엔드 API 연동 전 껍데기 로직
-    alert(`입력하신 [${email}] 로 임시 비밀번호를 발송했습니다. (기능 준비중)`)
-    navigate('/login')
+    // 메일 발송 기능이 아직 없다. 보내지 않은 메일을 보냈다고 안내하지 않는다.
+    alert('비밀번호 찾기 기능은 아직 준비 중입니다. 로그인이 어려우시면 관리자에게 문의해 주세요.')
   }
 
   return (
@@ -25,7 +23,7 @@ const FindPasswordPage = () => {
             <Lock size={32} className="text-[#3478B8]" />
           </div>
           <h2 className="text-2xl font-black text-gray-800">비밀번호 찾기</h2>
-          <p className="text-gray-400 text-xs mt-2 font-medium">가입하신 이메일 주소를 입력하시면<br/>임시 비밀번호를 보내드립니다.</p>
+          <p className="text-gray-400 text-xs mt-2 font-medium">비밀번호 찾기(임시 비밀번호 발송) 기능은 준비 중입니다.<br/>로그인이 어려우시면 관리자에게 문의해 주세요.</p>
         </div>
 
         <div className="px-6 sm:px-10 pb-8 sm:pb-10 space-y-6">
@@ -45,7 +43,7 @@ const FindPasswordPage = () => {
             </div>
 
             <button type="submit" className="w-full bg-[#3478B8] text-white py-4 rounded-xl font-black shadow-md hover:bg-[#2a6296] transition flex items-center justify-center">
-              <Send size={18} className="mr-2" /> 임시 비밀번호 받기
+              <Send size={18} className="mr-2" /> 비밀번호 찾기 (준비 중)
             </button>
           </form>
 

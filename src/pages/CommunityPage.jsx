@@ -63,12 +63,7 @@ const CommunityPage = () => {
       if (Array.isArray(data) && data.length > 0) {
         setAllPosts(data)
       } else {
-        // 백엔드에 데이터가 아직 없을 때 기본 더미 데이터 표시
-        setAllPosts([
-          { id: 3, category: '공지사항', title: '📁 [6월 1주차] 취준생 필독! 이번주 합격 스펙&취준 꿀팁 LIST', content: '이번 주 꼭 확인해야 할 합격 스펙과 꿀팁을 정리해 드립니다!\n\n1. 어학 점수 커트라인\n2. 필수 자격증 리스트\n3. 면접 빈출 질문', writer: 'CertiMate', date: '2026.06.05', views: 262, recommendations: 12, comments: 1, isNotice: true, replyList: [{ id: 1, writer: '취준파이터', date: '2026.06.05', content: '좋은 정보 감사합니다!' }] },
-          { id: 2, category: '자유게시판', title: '🍽️ 취뽀한 날 당일 저녁 뭐 먹고 싶어? 댓글 달고 치킨 받자!', content: '드디어 취업에 성공한 여러분! 가장 먼저 먹고 싶은 음식은 무엇인가요?\n댓글로 남겨주시면 추첨을 통해 5분께 치킨 기프티콘을 쏩니다!', writer: 'CertiMate', date: '2026.06.04', views: 258, recommendations: 8, comments: 0, isNotice: true, replyList: [] },
-          { id: 1, category: 'BEST 취준', title: '🏆 [6월 1주차] 취준생이 꼭 봐야할 인턴 공고 스펙 총정리', content: '현재 모집 중인 주요 기업 인턴 공고와 합격자 평균 스펙을 모았습니다. 놓치지 말고 지원하세요!', writer: 'CertiMate', date: '2026.06.04', views: 997, recommendations: 45, comments: 0, isNotice: true, replyList: [] },
-        ])
+        setAllPosts([])
       }
     } catch (err) {
       console.error('게시글 목록 불러오기 실패:', err)
@@ -89,151 +84,11 @@ const CommunityPage = () => {
         })
         setBestPosts(sorted.slice(0, 5))
       } else {
-        const dummyBest = [
-          {
-            id: 101,
-            category: '취업/이직',
-            title: '면접에서 어학 없는 이유 물어보네요...',
-            content: '어학 점수가 없어서 걱정했는데 다행히 실무 포트폴리오와 자격증을 좋게 봐주셨습니다.\n모두 자신감 갖고 도전하세요!',
-            writer: '취준생A',
-            date: '2026.06.05',
-            views: 1520,
-            recommendations: 85,
-            comments: 4,
-            replyList: [
-              { id: 1, writer: '멘토스', date: '2026.06.05', content: '직무 관련 자격증이 확실하면 어학 공백도 충분히 커버 가능합니다.' }
-            ]
-          },
-          {
-            id: 102,
-            category: '자유게시판',
-            title: '내 나이 29살, 공시 포기하고 취준할까요?',
-            content: '공무원 시험 2년 준비하다가 이번에 일반 기업이나 공기업 자격증 취득 후 취준으로 전향하려 합니다. 늦지 않았을까요?',
-            writer: '합격가자',
-            date: '2026.06.04',
-            views: 2310,
-            recommendations: 42,
-            comments: 7,
-            replyList: []
-          },
-          {
-            id: 103,
-            category: '고민상담',
-            title: '취준 마음가짐을 못 잡겠음',
-            content: '서류 탈락이 계속되니까 자존감이 떨어지네요. 다들 멘탈 관리 어떻게 하시나요?',
-            writer: '파이팅맨',
-            date: '2026.06.03',
-            views: 980,
-            recommendations: 120,
-            comments: 4,
-            replyList: []
-          },
-          {
-            id: 104,
-            category: '자격증',
-            title: '공대 전공을 못 살릴거 같아요',
-            content: '전공과 다른 IT 데이터/개발 자격증 취득하고 있는데 괜찮을까요?',
-            writer: '코딩초보',
-            date: '2026.06.02',
-            views: 1840,
-            recommendations: 63,
-            comments: 5,
-            replyList: []
-          },
-          {
-            id: 105,
-            category: 'BEST 취준',
-            title: '인턴 자격요건에 경력 1년.. ㅋㅋㅋ',
-            content: '신입 인턴 채용공고인데 필수 우대요건에 관련 경력 1년 이상이 적혀있네요 허탈합니다.',
-            writer: '인턴희망',
-            date: '2026.06.01',
-            views: 3100,
-            recommendations: 195,
-            comments: 5,
-            replyList: []
-          },
-        ]
-        const sorted = [...dummyBest].sort((a, b) => {
-          if (sort === 'recommendations') {
-            return (b.recommendations || 0) - (a.recommendations || 0)
-          }
-          return (b.views || 0) - (a.views || 0)
-        })
-        setBestPosts(sorted.slice(0, 5))
+        setBestPosts([])
       }
     } catch (err) {
       console.error('인기글 불러오기 실패:', err)
-      const dummyBest = [
-        {
-          id: 101,
-          category: '취업/이직',
-          title: '면접에서 어학 없는 이유 물어보네요...',
-          content: '어학 점수가 없어서 걱정했는데 다행히 실무 포트폴리오와 자격증을 좋게 봐주셨습니다.\n모두 자신감 갖고 도전하세요!',
-          writer: '취준생A',
-          date: '2026.06.05',
-          views: 1520,
-          recommendations: 85,
-          comments: 4,
-          replyList: [
-            { id: 1, writer: '멘토스', date: '2026.06.05', content: '직무 관련 자격증이 확실하면 어학 공백도 충분히 커버 가능합니다.' }
-          ]
-        },
-        {
-          id: 102,
-          category: '자유게시판',
-          title: '내 나이 29살, 공시 포기하고 취준할까요?',
-          content: '공무원 시험 2년 준비하다가 이번에 일반 기업이나 공기업 자격증 취득 후 취준으로 전향하려 합니다. 늦지 않았을까요?',
-          writer: '합격가자',
-          date: '2026.06.04',
-          views: 2310,
-          recommendations: 42,
-          comments: 7,
-          replyList: []
-        },
-        {
-          id: 103,
-          category: '고민상담',
-          title: '취준 마음가짐을 못 잡겠음',
-          content: '서류 탈락이 계속되니까 자존감이 떨어지네요. 다들 멘탈 관리 어떻게 하시나요?',
-          writer: '파이팅맨',
-          date: '2026.06.03',
-          views: 980,
-          recommendations: 120,
-          comments: 4,
-          replyList: []
-        },
-        {
-          id: 104,
-          category: '자격증',
-          title: '공대 전공을 못 살릴거 같아요',
-          content: '전공과 다른 IT 데이터/개발 자격증 취득하고 있는데 괜찮을까요?',
-          writer: '코딩초보',
-          date: '2026.06.02',
-          views: 1840,
-          recommendations: 63,
-          comments: 5,
-          replyList: []
-        },
-        {
-          id: 105,
-          category: 'BEST 취준',
-          title: '인턴 자격요건에 경력 1년.. ㅋㅋㅋ',
-          content: '신입 인턴 채용공고인데 필수 우대요건에 관련 경력 1년 이상이 적혀있네요 허탈합니다.',
-          writer: '인턴희망',
-          date: '2026.06.01',
-          views: 3100,
-          recommendations: 195,
-          comments: 5,
-          replyList: []
-        },
-      ]
-      const sorted = [...dummyBest].sort((a, b) => {
-        if (sort === 'recommendations') {
-          return (b.recommendations || 0) - (a.recommendations || 0)
-        }
-        return (b.views || 0) - (a.views || 0)
-      })
-      setBestPosts(sorted.slice(0, 5))
+      setBestPosts([])
     }
   }
 
