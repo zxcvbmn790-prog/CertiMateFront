@@ -17,7 +17,6 @@ const GoogleCallbackPage = () => {
       try {
         await authApi.googleLogin(code)
         localStorage.setItem('isLoggedIn', 'true')
-        localStorage.setItem('loginTime', new Date().getTime())
         window.location.href = '/' // 홈으로 이동하며 상단바 갱신 (성공 알림 없이 매끄럽게)
       } catch (error) {
         console.error('구글 로그인 실패:', error)

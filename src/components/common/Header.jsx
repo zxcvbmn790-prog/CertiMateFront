@@ -19,39 +19,19 @@ function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const closeMenu = () => setIsMenuOpen(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [elapsedTime, setElapsedTime] = useState('00:00:00')
   const [profile, setProfile] = useState({ name: '', profileImage: null })
 
   useEffect(() => {
     const checkAuth = () => {
       const loggedIn = localStorage.getItem('isLoggedIn') === 'true'
-      const loginTime = localStorage.getItem('loginTime')
 
-      if (loggedIn && loginTime) {
+      if (loggedIn) {
         setIsLoggedIn(true)
 
         // 로그인 상태면 내 정보(프로필 사진) 불러와 아바타 표시
         authApi.getMe()
           .then((res) => setProfile({ name: res.data.name || '', profileImage: res.data.profileImage || null }))
           .catch(() => {})
-
-        const timer = setInterval(() => {
-          const now = new Date().getTime()
-          const diff = now - parseInt(loginTime)
-          const twoHours = 2 * 60 * 60 * 1000
-
-          if (diff >= twoHours) {
-            clearInterval(timer)
-            handleLogout('보안을 위해 2시간이 경과하여 자동 로그아웃 되었습니다.')
-          } else {
-            const hours = Math.floor(diff / (1000 * 60 * 60)).toString().padStart(2, '0')
-            const minutes = Math.floor((diff / (1000 * 60)) % 60).toString().padStart(2, '0')
-            const seconds = Math.floor((diff / 1000) % 60).toString().padStart(2, '0')
-            setElapsedTime(`${hours}:${minutes}:${seconds}`)
-          }
-        }, 1000)
-
-        return () => clearInterval(timer)
       }
     }
     checkAuth()
@@ -87,9 +67,6 @@ function Header() {
           <div className="flex items-center space-x-2 sm:space-x-3">
             {isLoggedIn ? (
               <div className="flex items-center space-x-2 sm:space-x-4">
-                <span className="hidden md:flex text-[12px] text-[#3478B8] font-bold bg-[#3478B8]/10 px-3 py-1.5 rounded-full font-mono items-center">
-                  <span className="mr-1 text-gray-500">접속시간</span> {elapsedTime}
-                </span>
                 <Link to="/profile" className="hidden sm:block text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2">
                   내정보
                 </Link>
@@ -155,9 +132,7 @@ function Header() {
             <div className="border-t border-slate-100 mt-2 pt-3 flex items-center justify-between px-3">
               {isLoggedIn ? (
                 <>
-                  <span className="text-[12px] text-[#3478B8] font-bold font-mono">
-                    <span className="mr-1 text-gray-500">접속시간</span> {elapsedTime}
-                  </span>
+                  <span />
                   <button
                     onClick={() => handleLogout()}
                     className="text-sm font-semibold bg-gray-100 text-gray-600 px-4 py-2 rounded-lg"

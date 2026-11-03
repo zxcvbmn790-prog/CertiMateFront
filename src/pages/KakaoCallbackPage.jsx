@@ -32,7 +32,6 @@ const KakaoCallbackPage = () => {
         await authApi.kakaoLogin(code)
         // 로그인 상태 도장 + 시간
         localStorage.setItem('isLoggedIn', 'true')
-        localStorage.setItem('loginTime', new Date().getTime())
         window.location.href = '/' // 홈으로 이동하며 상단바 갱신 (성공 알림 없이 매끄럽게)
       } catch (error) {
         console.error('카카오 연동/로그인 실패:', error)

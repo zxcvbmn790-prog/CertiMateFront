@@ -16,7 +16,6 @@ const LoginPage = () => {
       alert('로그인에 성공했습니다!')
 
       localStorage.setItem('isLoggedIn', 'true')
-      localStorage.setItem('loginTime', new Date().getTime())
 
       window.location.href = '/'
     } catch (error) {
